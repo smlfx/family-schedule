@@ -1,11 +1,11 @@
 /* 离线缓存：联网时优先拿最新版，断网时用缓存打开。
    只有 https（或 localhost）下浏览器才允许注册 Service Worker —— 所以部署到
    https 之后「断网也能开」才真正生效。 */
-const CACHE = "family-schedule-v2";
+const CACHE = "family-schedule-v3";
 const ASSETS = [
   "./",
   "./index.html",
-  "./manifest.webmanifest",
+  "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",

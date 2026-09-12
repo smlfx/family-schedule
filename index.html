@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="家里日程" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<link rel="manifest" href="manifest.webmanifest" />
+<link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" href="icon-192.png" />
 <style>
@@ -1946,6 +1946,34 @@ function isStandalone() {
   return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
          navigator.standalone === true;
 }
+/* 认出用户用的是哪个浏览器 —— 「能不能装成 App」全看这个。
+   国内常见浏览器（夸克/UC/QQ/百度/各家自带）都没有实现 WebAPK 安装，
+   它们的「添加到桌面」只是书签快捷方式，点开仍是带地址栏的浏览器。 */
+function browserHint() {
+  const ua = navigator.userAgent || "";
+  const has = (re) => re.test(ua);
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+  if (isIOS) {
+    if (has(/MicroMessenger/)) return { name: "微信", ok: false, tip: "微信里装不了。请点右上角「···」→ 在 Safari 中打开。" };
+    if (has(/CriOS|EdgiOS|FxiOS|OPiOS/)) return { name: "非 Safari 浏览器", ok: false, tip: "iPhone 上只有 Safari 能「添加到主屏幕」。请复制网址，改用 Safari 打开。" };
+    return { name: "Safari", ok: true, tip: "点屏幕底下中间的「分享」按钮（方框加向上箭头），往下找「添加到主屏幕」。" };
+  }
+  // 先认那些"不支持装"的（它们的 UA 里大多也带 Chrome，所以要排在前面）
+  if (has(/MicroMessenger/)) return { name: "微信内置浏览器", ok: false, tip: "微信里装不了。点右上角「···」→ 在浏览器打开。" };
+  if (has(/Quark/i)) return { name: "夸克浏览器", ok: false };
+  if (has(/UCBrowser|UBrowser|UCWEB/i)) return { name: "UC 浏览器", ok: false };
+  if (has(/MQQBrowser|QQBrowser/i)) return { name: "QQ 浏览器", ok: false };
+  if (has(/baidubrowser|BIDUBrowser/i)) return { name: "百度浏览器", ok: false };
+  if (has(/HuaweiBrowser/i)) return { name: "华为自带浏览器", ok: false };
+  if (has(/MiuiBrowser|XiaoMiBrowser|MiBrowser/i)) return { name: "小米自带浏览器", ok: false };
+  if (has(/HeyTapBrowser|OppoBrowser|VivoBrowser|SogouMobileBrowser/i)) return { name: "手机自带浏览器", ok: false };
+  // 再认能装的
+  if (has(/EdgA|Edg\//i)) return { name: "Microsoft Edge", ok: true, tip: "点右下角「…」→ 选「添加到手机」。" };
+  if (has(/SamsungBrowser/i)) return { name: "三星浏览器", ok: true, tip: "点右下角菜单 →「添加页面到」→「主屏幕」。" };
+  if (has(/Firefox|FxiOS/i)) return { name: "Firefox", ok: false, tip: "Firefox 只能加快捷方式，不会有独立图标。" };
+  if (has(/Chrome\//i)) return { name: "Chrome", ok: true, tip: "点右上角「⋮」→ 选「安装应用」或「添加到主屏幕」。" };
+  return null;
+}
 function promptInstall() {
   if (installEvent) {
     installEvent.prompt();
@@ -1956,16 +1984,26 @@ function promptInstall() {
     return;
   }
   if (isStandalone()) { toast("已经装好了，你现在就是从桌面图标打开的"); return; }
-  // iOS Safari 或已经错过安装时机：给手动步骤
-  openSheet("装到手机上",
-    '<div class="note">这个 App 是「网页 App」，装到桌面后：<b>有独立图标、打开没有浏览器地址栏、断网也能用</b>。</div>' +
-    '<div style="height:12px"></div>' +
-    '<div class="note"><b>安卓（Chrome / Edge）</b><br>点右上角 <b>⋮</b> → 选「<b>安装应用</b>」或「<b>添加到主屏幕</b>」→ 确认</div>' +
-    '<div style="height:10px"></div>' +
-    '<div class="note"><b>iPhone（Safari）</b><br>点底下中间的 <b>分享</b> 按钮 → 往下找「<b>添加到主屏幕</b>」→ 添加<br>' +
-    '<span style="color:#8a5a00">注意：iPhone 必须用 Safari，微信里打开的不行</span></div>' +
-    '<div style="height:10px"></div>' +
-    '<div class="note">装好之后，从桌面图标打开就是全屏的，和普通 App 一样。</div>');
+  const b = browserHint();
+  const head = '<div class="note">装成 App 之后：<b>桌面有独立图标、点开全屏没有地址栏、断网也能用</b>。</div><div style="height:12px"></div>';
+  let body;
+  if (b && b.ok) {
+    body = '<div class="note">你现在用的是 <b>' + b.name + '</b>，可以装。<br>' + (b.tip || "") + '</div>';
+  } else if (b) {
+    body = '<div class="note warn">你现在用的是 <b>' + b.name + '</b>。' + (b.tip ? "<br>" + b.tip : "") +
+      '<br><br><b>它不支持把网页装成 App</b> —— 那个「添加到桌面」只会生成一个带地址栏的快捷方式。</div>' +
+      '<div style="height:10px"></div>' +
+      '<div class="note"><b>想装成真正的 App，两条路：</b><br>' +
+      '① <b>装个 Microsoft Edge</b>（国内应用商店能搜到，也能从 edge.microsoft.com 下），用它打开这个网址再装 —— 推荐，以后自动更新<br>' +
+      '② <b>干脆不用浏览器，做成安装包</b>：电脑上打开 pwabuilder.com，把网址粘进去选 Android，下载 apk 再传手机安装</div>';
+  } else {
+    body = '<div class="note">如果你的浏览器菜单里有「安装应用」或「添加到主屏幕」，点它就行；<br>只有「添加到书签」的话，说明这个浏览器不支持装成 App。</div>' +
+      '<div style="height:10px"></div>' +
+      '<div class="note"><b>安卓上能装的浏览器：</b>Chrome、Microsoft Edge、三星浏览器</div>' +
+      '<div style="height:10px"></div>' +
+      '<div class="note"><b>iPhone：</b>只能用 Safari → 点底下的分享按钮 → 添加到主屏幕</div>';
+  }
+  openSheet("装到手机上", head + body + '<div style="height:12px"></div><div class="note">装好之后从桌面图标打开，和普通 App 一样。</div>');
 }
 
 /* 第一次打开时讲清楚：这是你自己的本子，别人看不到 */
