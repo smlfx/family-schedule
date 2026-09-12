@@ -1,0 +1,1983 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>家里的日程</title>
+<meta name="theme-color" content="#0f766e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="家里日程" />
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#1f2937; --sub:#6b7280; --line:#e8eaee;
+  --brand:#0f766e; --brand-soft:#e6f6f3; --amber:#b45309; --amber-soft:#fff7e6;
+  --danger:#dc2626; --ok:#16a34a; --r:16px; --sh:0 2px 10px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+.hidden{display:none !important}
+
+#app{height:100%;display:flex;flex-direction:column}
+
+/* ---------- 顶部 ---------- */
+#top{flex:none;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;background:#fff;border-bottom:1px solid var(--line)}
+.tipcard{
+  display:flex;align-items:flex-start;gap:8px;background:var(--amber-soft);
+  border:1px solid #f6e3b8;border-radius:14px;padding:9px 11px;
+}
+.tipcard .em{flex:none;font-size:15px;line-height:1.5}
+.tipcard .tx{flex:1;font-size:13.5px;line-height:1.5;color:#7c4a03;min-height:20px}
+.tipcard .more{flex:none;font-size:12px;color:#b07d2b;padding:2px 6px;border-radius:8px;background:#fff2d8;align-self:center}
+.tipcard.flash{animation:tipin .35s ease}
+@keyframes tipin{from{opacity:.25;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
+.datebar{display:flex;align-items:center;gap:8px;margin-top:9px}
+.navbtn{width:34px;height:34px;border-radius:10px;background:#f1f3f6;color:#4b5563;font-size:16px;display:flex;align-items:center;justify-content:center}
+.navbtn:active{background:#e6e9ee}
+.dbox{flex:1;min-width:0}
+.dmain{font-size:17px;font-weight:700;letter-spacing:.2px}
+.dsub{font-size:11.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gear{width:34px;height:34px;border-radius:10px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;font-size:16px}
+
+/* ---------- 家人作息条 ---------- */
+.people{display:flex;gap:7px;overflow-x:auto;padding:9px 0 1px;scrollbar-width:none}
+.people::-webkit-scrollbar{display:none}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#f2f4f7;
+  font-size:12.5px;color:#3f4650;white-space:nowrap;border:1.5px solid transparent}
+.pchip.on{background:#fff;border-color:currentColor;font-weight:600;box-shadow:var(--sh)}
+.pdot{width:8px;height:8px;border-radius:50%;flex:none}
+.psub{color:#98a0ae;font-size:11.5px}
+.pchip.on .psub{color:#6b7280}
+
+/* ---------- 主体 ---------- */
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 4px}
+.sect{margin-bottom:16px}
+.sechead{display:flex;align-items:baseline;gap:8px;margin:0 2px 8px}
+.sechead h2{font-size:14.5px;margin:0;font-weight:700;color:#374151}
+.sechead .cnt{font-size:12px;color:var(--sub)}
+.sechead .hint{margin-left:auto;font-size:11.5px;color:#9ca3af}
+
+.cards{display:flex;flex-direction:column;gap:8px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:11px 12px;display:flex;gap:10px;align-items:flex-start;border-left:4px solid var(--brand)}
+.card.done{opacity:.55}
+.card.done .ctitle{text-decoration:line-through}
+.card.past{border-left-color:#c7cbd2}
+.ctime{flex:none;width:56px;text-align:center}
+.ctime b{display:block;font-size:15px;font-weight:700;letter-spacing:.3px}
+.ctime span{display:block;font-size:11px;color:var(--sub)}
+.cbody{flex:1;min-width:0}
+.ctitle{font-size:15.5px;font-weight:600;word-break:break-word}
+.cmeta{margin-top:3px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tag{font-size:11px;padding:1px 7px;border-radius:8px;background:#f1f3f6;color:#4b5563}
+.tag.cat{background:var(--brand-soft);color:#0f6f68}
+.cnote{font-size:12.5px;color:var(--sub);margin-top:3px;word-break:break-word;white-space:pre-wrap}
+.cops{flex:none;display:flex;flex-direction:column;gap:6px}
+.cops button{width:32px;height:32px;border-radius:9px;background:#f4f5f7;font-size:14px;display:flex;align-items:center;justify-content:center}
+.cops button:active{background:#e8eaee}
+.empty{background:#fff;border-radius:var(--r);padding:18px 14px;text-align:center;color:#9ca3af;font-size:13.5px;box-shadow:var(--sh)}
+.empty b{display:block;color:#6b7280;font-size:14.5px;margin-bottom:4px;font-weight:600}
+
+/* ---------- 一天的时间分布：上午/下午两条横轴，编号指位置 ---------- */
+.tag.who{font-weight:600}
+.haxis{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:12px 14px 8px}
+.hblock+.hblock{margin-top:15px}
+.hmarks{position:relative}
+.hnum{position:absolute;transform:translateX(-50%);font-size:12.5px;font-weight:700;line-height:18px;padding:0 6px;border-radius:9px;white-space:nowrap}
+.hstem{position:absolute;width:1px;background:#dfe3e8;transform:translateX(-50%)}
+.htrack{position:relative;height:26px;border-radius:9px;background:#eef1f4;cursor:pointer;overflow:hidden}
+.hgrid{position:absolute;top:0;bottom:0;width:1px;background:#dce1e7}
+.hseg{position:absolute;top:3px;bottom:3px;border-radius:6px;min-width:7px;box-shadow:0 1px 2px rgba(15,23,42,.14)}
+.hnow{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--danger);border-radius:1px;pointer-events:none;z-index:3}
+.hticks{position:relative;height:15px;margin-top:4px}
+.hticks span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:#a8afba}
+.hempty{position:absolute;left:0;right:0;top:0;font-size:11.5px;color:#b6bcc6;text-align:center;line-height:18px}
+.cnum{display:inline-block;min-width:17px;height:17px;line-height:17px;text-align:center;border-radius:50%;font-size:11px;font-weight:700;margin-right:6px;vertical-align:1px}
+
+/* ---------- 底部 ---------- */
+#bottom{flex:none;background:#fff;border-top:1px solid var(--line);padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 8px)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:13px;padding:7px 12px;border-radius:999px;background:#f2f4f7;color:#3f4650;white-space:nowrap}
+.chip:active{background:#e6e9ee}
+.chip.hi{background:var(--brand-soft);color:#0c6a63;font-weight:600}
+.chip .badge{display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:8px;background:var(--brand);color:#fff;font-size:10.5px;text-align:center}
+.inputrow{display:flex;gap:7px;align-items:center}
+#nlInput{flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid #e2e5ea;background:#f8f9fb;padding:0 12px;font-size:15px;outline:none}
+#nlInput:focus{border-color:var(--brand);background:#fff}
+.ibtn{width:44px;height:44px;border-radius:12px;background:#f1f3f6;font-size:17px;display:flex;align-items:center;justify-content:center;flex:none}
+.ibtn.rec{background:#fee2e2;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.55}}
+.sendbtn{flex:none;height:44px;padding:0 15px;border-radius:12px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
+.sendbtn:disabled{background:#cbd5d4}
+.parsehint{font-size:11.5px;color:#9ca3af;margin-top:6px;min-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.parsehint.warn{color:#b45309}
+
+/* ---------- 弹层 ---------- */
+.mask{position:fixed;inset:0;background:rgba(17,24,39,.42);z-index:40;opacity:0;transition:opacity .2s}
+.mask.on{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-radius:20px 20px 0 0;max-height:88vh;display:flex;flex-direction:column;transform:translateY(102%);transition:transform .26s cubic-bezier(.22,.7,.3,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.on{transform:none}
+.sheethead{flex:none;display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.sheethead b{font-size:16.5px;flex:1}
+.sheethead .x{width:32px;height:32px;border-radius:10px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sheetbody{flex:1;overflow-y:auto;padding:14px 16px 20px}
+.frow{margin-bottom:12px}
+.frow label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:5px}
+.frow input,.frow select,.frow textarea{width:100%;height:44px;border-radius:12px;border:1px solid #e2e5ea;background:#f8f9fb;padding:0 12px;font-size:15px;outline:none}
+.frow textarea{height:auto;min-height:76px;padding:10px 12px;resize:vertical;line-height:1.5}
+.frow input:focus,.frow textarea:focus,.frow select:focus{border-color:var(--brand);background:#fff}
+.frow.two{display:flex;gap:10px}
+.frow.two>div{flex:1}
+.btn{width:100%;height:46px;border-radius:13px;background:var(--brand);color:#fff;font-weight:600;font-size:15.5px}
+.btn.ghost{background:#f2f4f7;color:#374151;font-weight:500}
+.btn.danger{background:#fef2f2;color:var(--danger)}
+.btn+.btn{margin-top:9px}
+.note{font-size:12.5px;color:var(--sub);line-height:1.6;background:#f8f9fb;border-radius:12px;padding:10px 12px}
+.note.warn{background:var(--amber-soft);color:#8a5a00}
+.note b{color:inherit}
+
+/* 吃什么 */
+.dish{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.dish .dh{display:flex;align-items:baseline;gap:8px}
+.dish .dn{font-size:16px;font-weight:700;flex:1}
+.dish .dk{font-size:11px;padding:2px 7px;border-radius:8px;background:var(--brand-soft);color:#0c6a63;flex:none}
+.dish .dt{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}
+.dish .di{font-size:12.5px;color:#4b5563;margin-top:7px;line-height:1.55}
+.dish .ds{font-size:12.5px;color:#6b7280;margin-top:5px;line-height:1.6}
+.dish .dops{display:flex;gap:7px;margin-top:9px}
+.dish .dops button{flex:1;height:36px;border-radius:10px;background:#f2f4f7;font-size:13px;color:#374151}
+.dish .dops button.p{background:var(--brand-soft);color:#0c6a63;font-weight:600}
+.sethead{font-size:13px;color:var(--sub);margin:2px 0 10px}
+.formchips{padding-bottom:10px;margin:0 0 2px}
+.shopitem{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #f1f3f6}
+.shopitem input{width:20px;height:20px;accent-color:var(--brand);flex:none}
+.shopitem span{flex:1;font-size:15px}
+.shopitem span.done{text-decoration:line-through;color:#9ca3af}
+.shopitem .del{color:#c3c8d0;font-size:15px;padding:4px 6px}
+.rows{display:flex;gap:9px;flex-wrap:wrap}
+.qk{flex:1 1 45%;height:42px;border-radius:12px;background:#f4f5f7;font-size:14px;color:#374151}
+
+/* 家人列表 / 小按钮 */
+.personrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f1f3f6}
+.pinfo{flex:1;min-width:0}
+.pinfo b{display:block;font-size:15px;font-weight:600}
+.pinfo span{font-size:12px;color:var(--sub);line-height:1.45;display:block}
+.mini{flex:none;font-size:12.5px;padding:7px 13px;border-radius:9px;background:#f2f4f7;color:#374151;white-space:nowrap}
+.mini:active{background:#e6e9ee}
+.presets{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.note b{font-weight:600}
+#rotPreview{line-height:1.9}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);transform:translate(-50%,14px);background:rgba(31,41,55,.94);color:#fff;font-size:13.5px;padding:9px 14px;border-radius:12px;z-index:80;max-width:88vw;line-height:1.5;opacity:0;pointer-events:none;transition:all .22s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="tipcard" id="tipCard">
+      <span class="em">💡</span><span class="tx" id="tipText"></span><span class="more">换一条</span>
+    </div>
+    <div class="datebar">
+      <button class="navbtn" id="dayPrev">‹</button>
+      <div class="dbox">
+        <div class="dmain" id="dateMain">—</div>
+        <div class="dsub" id="dateSub"></div>
+      </div>
+      <button class="navbtn" id="dayNext">›</button>
+      <button class="gear" id="btnSettings">⚙️</button>
+    </div>
+    <div class="people" id="peopleStrip"></div>
+  </header>
+
+  <main id="main">
+    <section class="sect">
+      <div class="sechead"><h2 id="listTitle">今天的安排</h2><span class="cnt" id="todayCount"></span></div>
+      <div id="todayList" class="cards"></div>
+    </section>
+    <section class="sect">
+      <div class="sechead"><h2>一天的时间分布</h2><span class="hint" id="tlHint">点线或编号就能改</span></div>
+      <div class="haxis" id="tl"></div>
+    </section>
+  </main>
+
+  <footer id="bottom">
+    <div class="chips">
+      <button class="chip hi" id="chipEat">🍚 今天吃什么</button>
+      <button class="chip" id="chipShop">🧺 买菜清单<span class="badge hidden" id="shopBadge">0</span></button>
+      <button class="chip" id="chipQuick">⚡ 常用</button>
+    </div>
+    <div class="inputrow">
+      <input id="nlInput" placeholder="说一句：我下班后记得提醒我买青椒" autocomplete="off" enterkeyhint="send" />
+      <button class="ibtn" id="btnMic" title="语音输入">🎤</button>
+      <button class="sendbtn" id="btnSend">安排</button>
+    </div>
+    <div class="parsehint" id="parseHint"></div>
+  </footer>
+</div>
+
+<div class="mask hidden" id="mask"></div>
+<div class="sheet" id="sheet">
+  <div class="sheethead"><b id="sheetTitle"></b><button class="x" id="sheetClose">✕</button></div>
+  <div class="sheetbody" id="sheetBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ 生活小常识库 ============================
+   收录标准：短（一般不超过 30 字）、可验证、贴近日常、不制造焦虑。
+   不复述"某某致癌""再不看就晚了"这类营销号说法。 */
+const TIPS = [
+"关火后让抽油烟机再转 3–5 分钟，能把残余油烟排得更干净。",
+"油温七成热（筷子插进去冒小泡）再下菜，不粘锅，油烟也更少。",
+"炒青菜全程大火，出锅前再放盐，颜色更绿也不出水。",
+"炖牛肉丢几片山楂或一小勺醋，肉更容易炖软。",
+"泡木耳用凉水，泡到发开就行，别超过 4 小时。",
+"洋葱先冷藏 10 分钟再切，辣眼睛会轻很多。",
+"铁锅擦干后薄薄抹一层油，不容易生锈。",
+"煮饭时滴几滴食用油，米粒更分明、不粘锅。",
+"肉提前一晚放冷藏室解冻，比热水泡更嫩也更放心。",
+"生熟用两块砧板，交叉污染能少一大半。",
+"盐放在出锅前，汤更鲜，肉也不容易柴。",
+"面团醒 20 分钟再擀，做出来更软。",
+"蒸馒头蒸好后焖 3 分钟再揭盖，不容易回缩。",
+"蛋液里加一点温水，炒出来的蛋更蓬松。",
+"切完辣椒手辣，先用食用油搓一搓再洗，比光用水管用。",
+"姜蒜末一次切好冻起来，做饭时直接抓一把。",
+"绿叶菜擦干水、用厨房纸包着冷藏，能多放好几天。",
+"香蕉别和别的水果挤在一起，它会催熟别人。",
+"蜂蜜结晶是正常现象，温水化开就能吃。",
+"米面豆子密封放阴凉处，能明显少生虫。",
+"大米里放几瓣去皮大蒜，能少长虫。",
+"食用油避光避热放，不容易变味。",
+"鸡蛋大头朝上放冷藏，能多存一阵。",
+"番茄放阴凉处风味更好，熟透了再进冰箱。",
+"牛奶开封后放冰箱里层，别放在门上的格子里。",
+"面包冷冻比冷藏更不容易变干，吃前回烤一下。",
+"油污趁温热擦最容易，凉了就得使劲。",
+"抽油烟机滤网用热水加洗洁精泡 15 分钟再刷，省一半力气。",
+"玻璃用一湿一干两块布擦，水痕少很多。",
+"白醋兑水 1:1 敷几分钟再擦，水龙头水垢好擦得多。",
+"冰箱门胶条用旧牙刷蘸小苏打水刷，能少发黑。",
+"洗衣机每月空转一次高温程序，能少异味。",
+"空调滤网两三周洗一次，制冷快也更省电。",
+"水槽有异味，倒点小苏打再冲一遍热水，能缓解。",
+"拖地水里滴几滴洗洁精就够，放多了会黏脚。",
+"垃圾桶底垫一张厨房纸，能吸掉渗出来的水。",
+"换季衣服洗净晾透再收，不容易发黄招虫。",
+"84 消毒液和洁厕灵千万不能混用，会冒出有毒气体。",
+"抹布海绵每周煮沸一次或直接换新，比餐具更该管。",
+"冰箱冷藏 0–4℃、冷冻 −18℃ 左右，比反复开关门重要。",
+"剩菜不烫手了就尽快冷藏，别在桌上放太久。",
+"久坐每 40–60 分钟起身活动两分钟，腰颈会舒服很多。",
+"早上起来先喝杯温水，补回一夜流失的水分。",
+"每天晒 10–20 分钟太阳，帮身体合成维生素 D。",
+"刷牙刷够两分钟，牙缝和牙龈边缘也要带到。",
+"洗手用流动水加肥皂搓 20 秒，比只用免洗更干净。",
+"看屏幕每 20 分钟望一下 6 米外，眼睛没那么干。",
+"午睡 20–30 分钟就够了，睡久了反而更困。",
+"睡前 1 小时把手机屏幕调暗，入睡会顺一些。",
+"感冒多数是病毒引起的，多喝水多休息，抗生素没用。",
+"运动前动态热身 5 分钟、运动后拉伸，能少拉伤。",
+"水杯放在伸手就能拿到的地方，自然就喝得多了。",
+"吃饭慢一点，大脑收到吃饱的信号大约要 20 分钟。",
+"泡脚水温 40℃ 左右、10 分钟就够，别太烫。",
+"每天开窗通风两三次，每次 10–20 分钟。",
+"走路时把手机放低点、下巴收一点，颈椎压力小。",
+"家里备个电子血压计，定期记录比偶尔量一次有用。",
+"出门前默念伸手要钱：身份证、手机、钥匙、钱包。",
+"买菜前先看一眼冰箱里还有什么，能少买重复的。",
+"购物列个清单，能省不少冤枉钱。",
+"玄关固定放伞和充电宝的位置，出门不用到处找。",
+"重要证件存一份电子版，放在自己找得到的地方。",
+"睡前把第二天要穿的衣服拿出来，早上少纠结。",
+"快递单上的姓名电话涂掉再扔。",
+"家里常备几个灯泡、一卷生料带，小修不用等。",
+"手机长期满电又发热最伤电池，平时充到八九十就够。",
+"待办写在固定的一个本子或一个 App 里，别全靠脑子记。",
+"同一件事只在同一个地方记，找的时候不慌。",
+"换季前把空调、热水器检查一遍，比坏了再修从容。",
+"常用密码交给密码管理器，比到处用同一个安全。",
+"手机相册按时间或人建几个相簿，找照片快很多。",
+"出门前把燃气和电器看一眼再走，路上更安心。",
+"焯绿叶菜时水里滴几滴油，捞出来颜色更亮。",
+"肉要冷水下锅焯，青菜要水开了再下锅，反了不是柴就是黄。",
+"炖汤中途别加冷水，肉会一下子收紧变柴。",
+"味精鸡精出锅前再放，久煮鲜味会打折。",
+"熬粥别加碱，会把米里的 B 族维生素破坏掉。",
+"豆浆煮到泡沫涌上来时其实还没熟，得再滚几分钟。",
+"豆角、四季豆必须炒到完全变色熟透，半生的会中毒。",
+"土豆发芽或表皮发绿就别吃了，毒素不只在那一点上。",
+"微波炉热剩饭盖一张湿厨房纸，不会干硬。",
+"煎鱼前把锅烧到微微冒烟、鱼身擦干，皮就不容易破。",
+"咸了别急着加水，丢几块生土豆煮一会儿能把咸味吸走。",
+"吃太辣喝牛奶比喝水管用，水只会把辣味抹得更开。",
+"炸东西时丢一段葱进油里，葱周围冒小泡就说明油温够了。",
+"剩米饭冷藏一夜再炒，粒粒分明不粘锅。",
+"米饭煮夹生了，戳几个洞洒点温水再焖十分钟。",
+"洋葱和大蒜别跟土豆堆一块放，容易互相催坏。",
+"大蒜拍一下或者微波十秒，皮就好剥了。",
+"干辣椒、花椒用小火焙一下再下锅，香味才出得来。",
+"番茄顶上划十字浇开水，皮一撕就掉。",
+"炒糖色时油别太热，糖一下去就转小火，糊了会发苦。",
+"电饭煲内胆别拿钢丝球刷，涂层掉了就开始粘锅。",
+"姜放冰箱反而容易发霉，放阴凉通风的地方更好。",
+"蜂蜜别用刚烧开的水冲，温水就行。",
+"一岁以内的宝宝不能吃蜂蜜，这一点没有例外。",
+"铁锅炒番茄这类酸的菜，会顺带溶出一点铁。",
+"沾了血渍、奶渍的衣服得用凉水洗，热水会把蛋白质烫死在布上。",
+"柔顺剂别用在毛巾和运动服上，会堵住纤维、影响吸水和排汗。",
+"毛衣洗完要平铺晾，挂着晾会被水坠长变形。",
+"羽绒服别干洗也别用普通洗衣粉，用中性洗涤剂，晾干后拍松。",
+"深色衣服翻过来洗、阴凉处晾，褪色慢很多。",
+"白衬衫领口发黄用氧系漂白剂泡，含氯的 84 反而可能越洗越黄。",
+"洗衣液不是倒越多越干净，多了漂不净，衣服发硬。",
+"洗衣机别塞满，衣物要能在里面翻得动才洗得干净。",
+"洗之前拉好拉链、扣上扣子，内衣装洗衣袋，不容易变形勾丝。",
+"衣服上的油渍先抹点洗洁精搓一下，再扔进洗衣机。",
+"口香糖粘在衣服上，拿冰块冻硬了一抠就掉。",
+"新买的衣服先洗一遍再穿，去掉浮色和整理剂。",
+"养花最常见的死因是浇太多，见干再浇比每天浇一点强。",
+"自来水接出来放一天再浇，氯气挥发掉，娇气的花不容易黄叶。",
+"淘米水要发酵过再浇，直接倒会烧根还招小虫。",
+"茶叶水、剩牛奶别往花盆里倒，会发霉长虫。",
+"叶子发黄先别急着施肥，多半是浇水过多烂了根。",
+"花盆托盘里别存水，根一直泡着会烂。",
+"换盆挑春秋两季，正开花的时候别动它。",
+"多肉夏天要控水，浇多了直接化水。",
+"飞机随身液体单瓶不超 100 毫升，要装进一个 1 升的袋子里。",
+"长途坐车每一两个小时起来活动一下腿，别一直窝着。",
+"订酒店优先选能免费取消的，行程变了不吃亏。",
+"行李卷起来塞比一层层叠着放更省地方，易碎品夹在衣服中间。",
+"飞机起降时嚼点东西或不停吞咽，耳朵不会那么疼。",
+"晕车坐前排、看远处，别低头玩手机。",
+"出门前把冰箱里放不住的菜清掉，回来不用扔一堆。",
+"带一个多口 USB 充电头，比带好几个充电器省一半地方。",
+"门锁发涩用铅笔芯刮点石墨粉吹进去，别滴油，油会粘灰更涩。",
+"眼镜用一滴洗洁精加清水冲，比拿衣服角擦干净得多。",
+"手机进水先关机、别充电，擦干静置，别急着开机试。",
+"长期不用的电池留一半电存放，比充满放着耐用。",
+"木质砧板用盐加半个柠檬擦，去味也干净。",
+"微波炉里放一碗水加热两分钟，内壁的油一擦就掉。",
+"冰箱里放一小碗小苏打，能吸掉串味。",
+"纱窗上贴一层湿报纸，半干时揭下来，灰跟着走。"
+];
+
+/* ============================ 清真家常菜库 ============================
+   全部不含猪肉、猪油、动物血、料酒；肉类请按家里的习惯选清真认证。
+   [名称, 标签, 分钟, 难度1-3, 类别(荤/海鲜/素/汤/主食), 食材, 做法] */
+const DISHES = [
+["青椒炒牛肉","快手 下饭",15,1,"荤","牛肉 青椒 蒜 生抽 淀粉","牛肉逆纹切片，用生抽和淀粉抓匀；热锅快炒到变色盛出，爆香蒜末下青椒，回锅加盐翻匀。"],
+["孜然羊肉","快手 下饭",15,1,"荤","羊肉片 洋葱 孜然 辣椒面","羊肉片加孜然和生抽抓匀；热锅下洋葱炒香，倒入羊肉大火快炒，撒辣椒面和盐。"],
+["葱爆羊肉","快手",12,1,"荤","羊肉片 大葱 生抽","羊肉片用生抽、白胡椒抓匀；大火爆香葱段，下羊肉快炒到刚变色就出锅。"],
+["西红柿炖牛腩","家常 汤菜",80,2,"荤","牛腩 番茄 洋葱 姜","牛腩冷水焯过，加姜片炖 50 分钟；下番茄洋葱再炖 20 分钟，加盐和一点糖。"],
+["土豆炖牛肉","家常",70,2,"荤","牛肉 土豆 胡萝卜 姜 葱","牛肉焯水后加姜葱炖 50 分钟，下土豆胡萝卜炖到软，加盐生抽收汁。"],
+["萝卜炖牛肉","家常 汤菜",70,2,"荤","牛肉 白萝卜 姜 花椒","牛肉焯水加姜和几粒花椒炖 50 分钟，下萝卜块再炖 20 分钟，出锅加盐。"],
+["咖喱鸡肉土豆","家常 下饭",35,2,"荤","鸡腿肉 土豆 胡萝卜 咖喱块","鸡肉和土豆胡萝卜切块炒香，加水没过煮 15 分钟，关小火化入咖喱块再煮 5 分钟。"],
+["香菇滑鸡","家常",25,2,"荤","鸡腿肉 香菇 姜 生抽 淀粉","鸡肉切块用生抽淀粉腌 10 分钟，和香菇姜片一起大火蒸 15 分钟。"],
+["宫保鸡丁（清真版）","下饭",20,2,"荤","鸡胸肉 花生米 干辣椒 花椒 葱","鸡丁用生抽淀粉腌好，炒香干辣椒花椒，下鸡丁炒熟，倒入糖醋生抽汁翻匀，最后放花生米。"],
+["大盘鸡（家常版）","家常 硬菜",45,2,"荤","鸡块 土豆 青椒 洋葱 干辣椒","鸡块炒到微黄，加洋葱干辣椒和生抽炒香，加水炖 20 分钟，下土豆再炖 15 分钟，收汁下青椒。"],
+["手抓饭","家常 一锅出",50,2,"荤","羊肉 胡萝卜 洋葱 大米","羊肉块炒香，下洋葱胡萝卜丝炒软，加水和大米，小火焖 25 分钟再翻匀。"],
+["牛肉炖粉条","家常 下饭",40,2,"荤","牛肉 粉条 白菜 葱姜","牛肉焯水加葱姜炖 25 分钟，下白菜和泡软的粉条再炖 10 分钟，加盐生抽。"],
+["卤牛肉","可提前做",90,2,"荤","牛腱 姜 葱 八角 桂皮 生抽","牛腱焯水，加姜葱八角和生抽小火卤 70 分钟，关火泡在汤里更入味，凉了再切。"],
+["烤鸡翅（无料酒版）","快手 烤箱",35,1,"荤","鸡翅 生抽 蜂蜜 蒜 孜然","鸡翅划两刀，用生抽、蒜末、孜然、一点蜂蜜腌 20 分钟，200℃ 烤 20 分钟中途翻面。"],
+["西红柿炒鸡蛋","快手 家常",10,1,"素","鸡蛋 番茄 糖 盐","鸡蛋加一点温水打散炒熟盛出；番茄炒出汁，回锅加盐和一点糖翻匀。"],
+["韭菜炒鸡蛋","快手",8,1,"素","韭菜 鸡蛋","鸡蛋炒熟盛出，下韭菜大火炒 30 秒，回锅加盐翻匀立刻出锅。"],
+["洋葱炒鸡蛋","快手",8,1,"素","洋葱 鸡蛋","鸡蛋炒散盛出，洋葱炒到透明微甜，回锅加盐和一点生抽。"],
+["黄瓜炒鸡蛋","快手 清爽",8,1,"素","黄瓜 鸡蛋 蒜","鸡蛋炒熟盛出，下黄瓜片大火炒 1 分钟，回锅加盐和蒜末。"],
+["麻婆豆腐（牛肉末版）","下饭",20,2,"素","嫩豆腐 牛肉末 豆瓣酱 花椒粉 蒜苗","牛肉末炒散，下豆瓣酱炒出红油，加水下豆腐煮 5 分钟，勾薄芡撒花椒粉和蒜苗。"],
+["家常豆腐","下饭",15,1,"素","北豆腐 青椒 木耳 生抽","豆腐切块煎到两面金黄，下青椒木耳，加生抽和一点水焖 3 分钟。"],
+["皮蛋豆腐","不用开火",5,1,"素","内酯豆腐 皮蛋 生抽 香油 葱","豆腐切块摆盘，皮蛋切瓣放上，淋生抽和香油，撒葱花。"],
+["香干炒芹菜","家常",12,1,"素","香干 芹菜 蒜","香干切条煸香，下芹菜大火炒 2 分钟，加盐和蒜末。"],
+["木耳炒山药","清爽",12,1,"素","木耳 山药 胡萝卜 蒜","山药切片泡水防黑；先炒胡萝卜和木耳，下山药大火炒 2 分钟，加盐蒜末。"],
+["蒜蓉油麦菜","快手",6,1,"素","油麦菜 蒜 盐","蒜末爆香，下油麦菜大火炒 40 秒，加盐出锅，别炒久。"],
+["清炒西兰花","快手",8,1,"素","西兰花 蒜 盐","西兰花切小朵，水开加一点盐焯 1 分钟，捞出大火和蒜末快炒。"],
+["醋溜白菜","快手 下饭",10,1,"素","白菜 干辣椒 醋 生抽","干辣椒爆香，下白菜帮炒 1 分钟再下叶，沿锅边淋醋，加盐生抽。"],
+["手撕包菜","快手 下饭",10,1,"素","包菜 蒜 干辣椒 生抽","包菜手撕成块，蒜和干辣椒爆香，大火炒到边缘微焦，加生抽和盐。"],
+["干煸豆角","下饭",15,2,"素","豆角 蒜 干辣椒 花椒","豆角掰段，小火煸到起皱盛出，爆香蒜和辣椒，回锅加盐翻匀（一定要煸熟）。"],
+["地三鲜","下饭",20,2,"素","茄子 土豆 青椒 蒜 生抽","土豆和茄子分别煎到微黄，爆香蒜末，全部回锅加生抽糖盐翻匀。"],
+["酸辣土豆丝","快手 下饭",10,1,"素","土豆 干辣椒 醋 花椒","土豆切细丝泡水去淀粉，爆香花椒干辣椒，大火炒 1 分钟沿锅边淋醋加盐。"],
+["香菇油菜","家常",12,1,"素","香菇 油菜 蒜 生抽","香菇切片炒香，下油菜大火炒 1 分钟，加生抽和盐。"],
+["干锅花菜","下饭",20,2,"素","花菜 蒜 干辣椒 生抽","花菜掰小朵焯 1 分钟沥干，爆香蒜和辣椒，下花菜炒到边缘焦，加生抽。"],
+["凉拌黄瓜","不用开火",5,1,"素","黄瓜 蒜 醋 香油","黄瓜拍裂切段，加蒜末、醋、生抽、香油和一点盐拌匀。"],
+["拌木耳","快手",10,1,"素","木耳 香菜 蒜 醋 香油","木耳泡发后焯 2 分钟过凉，加蒜末香菜醋香油拌匀。"],
+["蒜泥茄子","家常",15,1,"素","茄子 蒜 生抽 香油","茄子蒸 10 分钟撕成条，淋蒜泥生抽香油拌开。"],
+["清炒时蔬","快手",8,1,"素","当季绿叶菜 蒜 盐","蒜末爆香，绿叶菜大火快炒，断生就加盐出锅。"],
+["菌菇豆腐汤","快手 汤",15,1,"汤","嫩豆腐 平菇 香菇 葱 盐","菌菇炒香加水煮 5 分钟，下豆腐块再煮 3 分钟，加盐和白胡椒，撒葱花。"],
+["紫菜蛋花汤","快手 汤",8,1,"汤","紫菜 鸡蛋 虾皮 香油","水开下紫菜煮 1 分钟，淋蛋液成花，加盐和香油。"],
+["西红柿鸡蛋汤","快手 汤",10,1,"汤","番茄 鸡蛋 葱 盐","番茄炒出汁加水煮开，淋蛋液，加盐撒葱花。"],
+["冬瓜牛肉丸汤","快手 汤",25,1,"汤","冬瓜 清真牛肉丸 姜 白胡椒","水开下姜片和牛肉丸煮 8 分钟，下冬瓜片煮到透明，加盐和白胡椒。"],
+["玉米胡萝卜鸡汤","家常 汤",60,2,"汤","鸡块 玉米 胡萝卜 姜","鸡块焯水，加姜片和足量水炖 40 分钟，下玉米胡萝卜再炖 20 分钟，出锅加盐。"],
+["羊肉萝卜汤","家常 汤",60,2,"汤","羊肉 白萝卜 姜 香菜","羊肉焯水加姜炖 40 分钟，下萝卜再炖 20 分钟，加盐撒香菜。"],
+["三鲜豆腐羹","家常 汤",20,2,"汤","嫩豆腐 香菇 豌豆 鸡蛋 淀粉","香菇豌豆煮 5 分钟，下豆腐丁煮 3 分钟，勾芡后淋蛋液，加盐白胡椒。"],
+["番茄鸡蛋面","快手 主食",15,1,"主食","番茄 鸡蛋 面条 葱","番茄炒出汁加水煮开，下面条煮熟，淋蛋液，加盐撒葱花。"],
+["牛肉炒饭","快手 主食",15,1,"主食","米饭 牛肉末 鸡蛋 胡萝卜 葱","鸡蛋炒散，牛肉末炒香，下胡萝卜丁和米饭炒散，加盐生抽和葱花。"],
+["羊肉炒面","主食",20,2,"主食","面条 羊肉片 青椒 洋葱 生抽","面条煮八分熟过凉；羊肉片炒变色，下洋葱青椒，加面条和生抽炒匀。"],
+["葱油拌面","快手 主食",10,1,"主食","面条 小葱 生抽 糖 油","小火把葱段炸到微焦，加生抽和一点糖煮开成葱油，拌入煮好的面。"],
+["鸡丝凉面","主食 夏天",20,2,"主食","面条 鸡胸肉 黄瓜 芝麻酱 醋","鸡胸煮熟撕丝，面条煮熟过凉水，加黄瓜丝、鸡丝和芝麻酱醋汁拌匀。"],
+["牛肉白菜饺子","主食 可提前包",60,2,"主食","牛肉馅 白菜 葱姜 面粉","白菜剁碎挤水，和牛肉馅葱花姜末拌匀；包好水开下锅，点两次凉水浮起即熟。"],
+["小米南瓜粥","主食 养胃",30,1,"主食","小米 南瓜","小米洗净加水煮 15 分钟，下南瓜块再煮 10 分钟到软糯。"],
+["葱花鸡蛋饼","快手 早餐",10,1,"主食","面粉 鸡蛋 葱 盐","面粉加水调成稀糊，加鸡蛋葱花盐，平底锅薄油摊到两面微黄。"],
+["蒸南瓜红薯","不用看火",20,1,"主食","南瓜 红薯","切块上锅蒸 15–20 分钟，筷子能扎透就好。"],
+["白灼虾","快手",10,1,"海鲜","鲜虾 姜 葱 生抽","水开加姜葱，下虾煮到变红弯曲约 2 分钟，捞出蘸姜末生抽。"],
+["蒜蓉粉丝蒸虾","家常",15,2,"海鲜","鲜虾 粉丝 蒜 生抽","粉丝泡软垫底摆虾，铺蒜蓉淋生抽，上锅大火蒸 6 分钟。"],
+["清蒸鲈鱼","家常",20,2,"海鲜","鲈鱼 姜 葱 生抽","鱼身划刀放姜丝，水开大火蒸 8 分钟，倒掉汤汁，淋生抽铺葱丝浇热油。"],
+["腰果虾仁","快手",15,2,"海鲜","虾仁 腰果 黄瓜 蛋清 淀粉","虾仁用蛋清淀粉抓匀滑炒，下黄瓜丁和腰果，加盐翻匀。"],
+["番茄龙利鱼","快手",20,2,"海鲜","龙利鱼 番茄 淀粉 盐","鱼柳切片用淀粉抓匀，番茄炒出汁加水煮开，下鱼片煮 3 分钟加盐。"],
+["电饭煲土豆牛肉焖饭","一锅出 省事",45,1,"主食","牛肉 土豆 胡萝卜 大米 生抽","牛肉土豆胡萝卜切丁炒香，加生抽炒匀后和米一起放电饭煲，水比平时少一点，煮好焖十分钟再拌匀。"],
+["电饭煲香菇鸡肉饭","一锅出 省事",40,1,"主食","鸡腿肉 干香菇 大米 生抽 姜","干香菇泡发切丁，鸡肉切块用生抽姜片腌十分钟，和米一起下锅，泡香菇的水代替一部分清水，煮好拌匀。"],
+["东北饭包","东北 一锅出",25,1,"主食","大米 鸡蛋 大酱 生菜 葱 香菜","鸡蛋炒散加两勺大酱炒成鸡蛋酱；米饭拌葱花，用生菜叶包上米饭、鸡蛋酱和香菜，卷起来吃。"],
+["豆角焖面","东北 一锅出",30,2,"主食","豆角 面条 牛肉 蒜 生抽","豆角牛肉炒香加生抽和水煮开，生面条铺在上面盖盖焖 12 分钟，中途沿锅边淋点水，出锅前拌蒜末。"],
+["一锅出乱炖","东北 一锅出",40,2,"荤","豆角 土豆 茄子 玉米 牛肉 葱姜","牛肉炒变色加葱姜生抽，下豆角土豆茄子玉米翻炒，加水没过炖 25 分钟，收汁加盐。"],
+["酸菜炖粉条","东北 炖菜",35,2,"素","东北酸菜 宽粉 冻豆腐 葱姜","酸菜洗两遍挤干，葱姜炒香下酸菜炒两分钟，加水下粉条和冻豆腐炖 20 分钟，加盐。"],
+["白菜炖冻豆腐","东北 炖菜",30,1,"素","白菜 冻豆腐 粉条 葱姜","葱姜爆香下白菜炒软，加水下冻豆腐和粉条炖 15 分钟，加盐和白胡椒。"],
+["土豆炖茄子","东北 家常",25,1,"素","土豆 茄子 蒜 大酱","土豆茄子切滚刀块炒两分钟，加一勺大酱和水炖 15 分钟，出锅前撒蒜末。"],
+["砂锅豆腐","家常 砂锅",25,2,"素","北豆腐 白菜 粉丝 香菇 生抽","砂锅里铺白菜，放上豆腐粉丝香菇，加生抽和水，小火炖 15 分钟。"],
+["番茄豆腐煲","家常 砂锅",20,1,"素","番茄 嫩豆腐 木耳 蒜","番茄炒出汁加水煮开，下豆腐木耳煮 5 分钟，加盐和一点点糖。"],
+["手撕鸡拌料汁","新吃法 凉拌",30,1,"荤","鸡腿 蒜 生抽 醋 辣椒油 香菜","整只鸡腿冷水下锅加姜煮 15 分钟，捞出放凉撕成条，浇蒜末生抽醋辣椒油，撒香菜和熟芝麻。"],
+["东北老虎菜","东北 凉拌",8,1,"素","青椒 大葱 香菜 生抽 醋","青椒大葱切丝加香菜段，用生抽醋和一点香油拌开，配饭特别下饭。"],
+["蒜茄子","东北 凉拌",20,1,"素","茄子 蒜 香菜 盐","茄子蒸 15 分钟对半撕开，蒜末加盐和香菜塞进去，冷藏一夜更好吃。"],
+["蘸酱菜","东北 不用开火",8,1,"素","黄瓜 萝卜 生菜 干豆腐 大酱","鸡蛋炒散加两勺大酱炒成鸡蛋酱；黄瓜萝卜干豆腐切条，蘸着吃。"],
+["干豆腐卷","东北 快手",10,1,"素","干豆腐 黄瓜 大葱 香菜 大酱","干豆腐焯十秒捞出，铺上黄瓜丝葱丝香菜抹点大酱，卷紧切段。"],
+["麻辣拌","新吃法",25,2,"素","金针菇 宽粉 干豆腐 青菜 芝麻酱 蒜","各种菜分别焯熟捞出，用芝麻酱蒜末生抽醋辣椒油拌开，趁热吃。"],
+["烤年糕片","新吃法 烤箱",10,1,"素","年糕片 生抽 孜然 辣椒面","年糕片刷一层生抽，撒孜然和辣椒面，200℃ 烤 8 分钟，鼓起来就能吃。"],
+["锡纸金针菇","新吃法 烤箱",18,1,"素","金针菇 蒜 生抽 小米辣","金针菇洗净放锡纸上，铺蒜末淋生抽，包严实 200℃ 烤 15 分钟。"],
+["蒜香烤茄子","新吃法 烤箱",25,1,"素","茄子 蒜 生抽 孜然","茄子整个烤 20 分钟到软，划开铺蒜末生抽孜然，再回炉 5 分钟。"],
+["烤冷面（家常版）","东北 新吃法",12,1,"主食","冷面片 鸡蛋 洋葱 香菜 蒜蓉辣酱","平底锅放冷面片，打一个鸡蛋摊开，翻面刷蒜蓉辣酱，撒洋葱香菜卷起来切段。"],
+["烤箱烤肉拼盘","新吃法 烤箱",35,1,"荤","羊肉片 鸡翅 土豆 洋葱 孜然 辣椒面","肉片用孜然辣椒面生抽腌 20 分钟，和土豆洋葱一起铺烤盘，200℃ 烤 25 分钟。"],
+["清汤火锅（家常）","一锅出 全家",30,1,"荤","羊肉片 白菜 豆腐 粉条 菌菇 番茄","番茄和葱姜煮一锅清汤底，肉菜边涮边吃，蘸料用芝麻酱加蒜末生抽。",],
+["蘸汁手抓羊排","新吃法 硬菜",50,2,"荤","羊排 姜 葱 花椒 生抽 蒜","羊排冷水下锅加姜葱花椒煮 40 分钟，捞出蘸蒜泥生抽吃，煮肉的汤还能下面条。"],
+["鸡蛋焖子","东北",20,1,"素","鸡蛋 大酱 葱 油","鸡蛋打散加两勺大酱和葱花，再兑等量温水搅匀，上锅蒸 12 分钟。"],
+["粘豆包","东北 可提前做",40,2,"主食","黄米面 红豆沙","黄米面温水和成团醒半小时，包入豆沙上锅蒸 20 分钟，再煎一下更香。"],
+["大碴粥","东北 主食",60,1,"主食","玉米碴 芸豆","玉米碴和芸豆洗净泡两小时，加水大火烧开转小火煮 45 分钟。"],
+["疙瘩汤","东北 主食",20,1,"汤","面粉 鸡蛋 番茄 青菜 葱","面粉滴水用筷子搅成小疙瘩；番茄炒出汁加水煮开，下疙瘩煮 5 分钟，淋蛋液加青菜。"],
+["圆白菜炒饼","北方 主食",15,1,"主食","烙饼 圆白菜 鸡蛋 蒜 生抽","饼切丝，鸡蛋炒散盛出，圆白菜炒软下饼丝和生抽翻炒，回锅鸡蛋加蒜末。"],
+["鸡蛋灌饼","北方 早餐",20,2,"主食","面粉 鸡蛋 生菜 大酱","面团擀薄烙到鼓起，用筷子戳开倒入蛋液，两面烙黄，抹大酱夹生菜。"],
+["玉米面发糕","北方 主食",45,2,"主食","玉米面 面粉 酵母 红枣","玉米面和白面一比一加酵母温水和成糊，发到两倍大撒枣，上锅蒸 25 分钟。"],
+["蒸胡萝卜丸子","素 蒸菜",30,2,"素","胡萝卜 面粉 鸡蛋 葱","胡萝卜擦丝加鸡蛋葱花和面粉拌匀，团成丸子蒸 15 分钟，蘸蒜汁吃。"],
+["牛肉锅包肉","东北 硬菜",30,3,"荤","牛里脊 淀粉 糖 醋 番茄酱 葱姜","牛里脊切片用葱姜水抓匀，裹厚淀粉糊炸两遍；另起锅熬糖醋番茄汁，倒入肉片翻匀。"],
+["溜肉段（牛肉版）","东北 下饭",30,2,"荤","牛里脊 青椒 淀粉 蒜 生抽","牛肉切段挂淀粉糊炸到金黄，爆香蒜末下青椒，倒入生抽糖醋汁和肉段翻匀。"],
+["孜然烤鸡架","东北 新吃法",40,2,"荤","鸡架 孜然 辣椒面 生抽 蒜","鸡架用生抽蒜末孜然腌半小时，200℃ 烤 25 分钟，中途翻面再撒一层孜然辣椒面。"],
+["香菇酿肉（牛肉馅）","蒸菜",30,2,"荤","香菇 牛肉馅 葱姜 生抽 淀粉","牛肉馅加葱姜生抽拌上劲，填进香菇里上锅蒸 15 分钟，蒸出的汁勾薄芡浇回去。"],
+["干煸杏鲍菇","素 下饭",15,1,"素","杏鲍菇 蒜 干辣椒 花椒 生抽","杏鲍菇手撕成条，小火煸到微焦出水，下蒜辣椒花椒炒香，加生抽和一点盐。"],
+["番茄龙利鱼煲","家常 砂锅",25,2,"海鲜","龙利鱼 番茄 金针菇 淀粉","鱼切片用淀粉抓匀，番茄炒出汁加水煮开，下金针菇和鱼片煮 3 分钟加盐。"],
+["羊汤","东北 汤",90,2,"汤","羊骨 羊肉 姜 葱 香菜 白胡椒","羊骨羊肉冷水下锅焯净，加姜葱和足量水小火炖 80 分钟，出锅加盐白胡椒和香菜。"]
+];
+
+/* ================= 分类识别：关键词 → 类别 / 默认时长(分钟) ================= */
+const CATS = [
+  { key:"买菜", emoji:"🧺", color:"#0f766e", dur:40,
+    kw:["买菜","菜市场","超市","买点","买一些","采购","生鲜","买菜清单","买水果","买米","买面"] },
+  { key:"做饭", emoji:"🍳", color:"#c2410c", dur:60,
+    kw:["做饭","做菜","炒菜","煮饭","下厨","包饺子","蒸","炖","煲汤","准备晚饭","准备午饭"] },
+  { key:"健康", emoji:"💊", color:"#dc2626", dur:30,
+    kw:["吃药","喝药","服药","买药","看医生","医院","复诊","体检","量血压","打针","挂号","换药","看牙","理疗"] },
+  { key:"吃饭", emoji:"🍚", color:"#b45309", dur:30,
+    kw:["吃饭","吃早饭","吃午饭","吃晚饭","吃早点","早餐","午餐","晚餐","夜宵","喝茶","喝咖啡","吃"] },
+  { key:"工作", emoji:"💼", color:"#1d4ed8", dur:60,
+    kw:["上班","开会","会议","汇报","加班","交材料","写报告","发邮件","见客户","面试","出差","值班","培训"] },
+  { key:"家人", emoji:"👨‍👩‍👧", color:"#be185d", dur:45,
+    kw:["接孩子","接娃","送孩子","送娃","辅导作业","家长会","陪孩子","看孩子","接老人","陪爸妈","探亲","走亲戚","视频通话"] },
+  { key:"运动", emoji:"🏃", color:"#15803d", dur:45,
+    kw:["锻炼","跑步","健身","散步","打球","游泳","瑜伽","爬山","骑车","跳操","拉伸"] },
+  { key:"家务", emoji:"🧹", color:"#7c3aed", dur:40,
+    kw:["打扫","收拾","整理","洗衣服","晒被子","拖地","擦","洗碗","倒垃圾","熨衣服","大扫除","收拾屋子"] },
+  { key:"事务", emoji:"📌", color:"#475569", dur:20,
+    kw:["交电费","交水费","交话费","缴费","充值","取快递","寄快递","拿快递","办证","银行","还款","预约","报名","续费","还书"] },
+  { key:"学习", emoji:"📖", color:"#0369a1", dur:60,
+    kw:["学习","看书","读书","背单词","写作业","复习","上课","练字","练琴","听课"] },
+  { key:"个人", emoji:"🛁", color:"#9333ea", dur:30,
+    kw:["理发","剪头","洗澡","剪指甲","护肤","洗车","加油","保养车","取票","订票","坐车","开车去"] },
+  { key:"出行", emoji:"🚗", color:"#0891b2", dur:60,
+    kw:["出门","去","回老家","送人","接人","机场","火车站","坐高铁","坐飞机","爬山","郊游","逛公园"] }
+];
+const DEFAULT_CAT = { key:"其他", emoji:"📝", color:"#6b7280", dur:30 };
+
+/* ================= 清真饮食校验 ================= */
+// 明确冲突（硬拦）
+const HALAL_BLOCK = [
+  { kw:["猪","猪肉","猪油","猪蹄","猪肝","排骨","五花","里脊","肋排","猪骨","大骨","猪皮","肉皮","红烧肉","回锅肉","扣肉","咕咾肉","咕噜肉","小炒肉","水煮肉片","狮子头","肉脯"], why:"猪肉类", fix:"换成牛肉 / 羊肉 / 鸡肉 就行，做法基本一样（想吃牛羊排骨，写清「牛排」「羊排」）。" },
+  { kw:["培根","火腿","香肠","腊肠","腊肉","午餐肉","肉松","肉肠","热狗","汉堡肉","猪排","叉烧","肉夹馍"], why:"多数含猪肉或非清真肉", fix:"换成清真牛肉肠 / 自己腌的鸡胸 / 卤牛肉片。" },
+  { kw:["血","鸭血","猪血","毛血旺","血豆腐"], why:"动物血制品", fix:"换成豆腐或粉丝，口感接近。" },
+  { kw:["料酒","黄酒","花雕","米酒","酒酿","醉虾","醉蟹","啤酒鸭","红酒"], why:"含酒精的调料/做法", fix:"用葱姜 + 白胡椒 + 一点生抽去腥，同样好吃。" },
+  { kw:["猪油渣","荤油","大油","牛油火锅底料（含猪油）"], why:"动物油脂来源不明", fix:"用植物油，或确认包装上写明清真。" }
+];
+// 需要确认（软提示）
+const HALAL_SOFT = [
+  { kw:["蚝油"], why:"蚝油按各家习惯不同", fix:"不确定就换生抽加一点点糖。" },
+  { kw:["高汤","浓汤宝","鸡精","鸡粉","火锅底料","咖喱块","牛肉丸","肉丸","鱼丸","蟹棒","虾饺"], why:"加工品可能含非清真成分", fix:"买的时候看一眼包装上有没有清真标识。" },
+  { kw:["牛油","动物油","黄油"], why:"油脂来源需确认", fix:"确认是清真来源，或换成植物油。" }
+];
+
+/* ================= 常用快捷安排 ================= */
+const QUICK = [
+  { t:"买菜（下班顺路）", s:"下班后买菜" },
+  { t:"做晚饭", s:"晚上6点做饭" },
+  { t:"接孩子", s:"下班后接孩子" },
+  { t:"锻炼 30 分钟", s:"晚上7点半锻炼" },
+  { t:"吃药", s:"晚上8点吃药" },
+  { t:"打扫卫生", s:"明天上午打扫卫生" },
+  { t:"给家里打电话", s:"晚上8点半给家里打电话" },
+  { t:"取快递", s:"下班后取快递" }
+];
+
+/* ============================== 基础工具 ============================== */
+const $ = (s) => document.querySelector(s);
+const pad = (n) => (n < 10 ? "0" + n : "" + n);
+const toHM = (m) => pad(Math.floor(m / 60) % 24) + ":" + pad(m % 60);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function dk(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function fromKey(k) { const p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function addDays(d, n) { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); x.setHours(0, 0, 0, 0); return x; }
+const WEEK = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+const CN_NUM = { 零:0, 一:1, 二:2, 两:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10 };
+function cn2num(s) {
+  if (s == null) return null;
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  if (CN_NUM[s] != null) return CN_NUM[s];
+  const m = s.match(/^([一二三四五六七八九])?十([一二三四五六七八九])?$/);
+  if (m) return (m[1] ? CN_NUM[m[1]] : 1) * 10 + (m[2] ? CN_NUM[m[2]] : 0);
+  return null;
+}
+
+/* ============================== 状态与存储 ============================== */
+const LS_KEY = "family-schedule-v1";
+let canStore = true;
+try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); } catch (e) { canStore = false; }
+
+/* 三个人、两套作息模式：
+   fixed  = 固定班（妈妈那种 8:00 上班、16:00 下班）
+   rotate = 轮班（爸爸那种：上一天白班、歇一天、再上夜班）
+   rotate.cycle 是一串字，一个字代表一天 —— 白=白班，夜=夜班，休=休息。
+   「白夜休」＝三天一轮；要是实际是四天一轮，把它改成「白休夜休」就行。 */
+function defaultPeople() {
+  return [
+    { id: "me", name: "我", color: "#0f766e", mode: "fixed",
+      fixed: { workStart: 9 * 60, workEnd: 16 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 7 * 60, sleep: 23 * 60 } },
+    { id: "mom", name: "妈妈", color: "#be185d", mode: "fixed",
+      fixed: { workStart: 8 * 60, workEnd: 16 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 6 * 60 + 30, sleep: 22 * 60 + 30 } },
+    { id: "dad", name: "爸爸", color: "#1d4ed8", mode: "rotate",
+      rotate: { cycle: "白夜休", anchor: dk(new Date()), dayStart: 8 * 60, dayEnd: 18 * 60, nightStart: 18 * 60, nightEnd: 8 * 60 } }
+  ];
+}
+function defaultState() {
+  return {
+    v: 2,
+    profile: {
+      name: "",
+      workStart: 9 * 60, workEnd: 16 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 7 * 60, sleep: 23 * 60,
+      avoid: ""               // 家里额外忌口，逗号分隔（全家共用）
+    },
+    people: defaultPeople(),
+    currentPerson: "me",
+    deviceId: "",       // 本机编号：第一次打开时生成，每台手机不同
+    firstRun: true,     // 首次打开讲一遍隐私
+    events: [],
+    shop: [],
+    seenTips: [],
+    seenDishes: [],
+    createdAt: dk(new Date())
+  };
+}
+let state = defaultState();
+
+function loadState() {
+  if (!canStore) return;
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const o = JSON.parse(raw);
+    if (o && o.profile && Array.isArray(o.events)) {
+      state = Object.assign(defaultState(), o);
+      state.profile = Object.assign(defaultState().profile, o.profile || {});
+      if (!Array.isArray(state.shop)) state.shop = [];
+      // 老版本数据没有 people，用旧的单一作息补一个人
+      if (!Array.isArray(state.people) || !state.people.length) {
+        const pp = defaultPeople();
+        pp[0].name = state.profile.name || "我";
+        pp[0].fixed = {
+          workStart: state.profile.workStart, workEnd: state.profile.workEnd,
+          lunchStart: state.profile.lunchStart, lunchEnd: state.profile.lunchEnd,
+          wake: state.profile.wake, sleep: state.profile.sleep
+        };
+        state.people = pp;
+      }
+      state.people = state.people.filter((x) => x && x.id);
+      state.people.forEach((x, i) => {
+        if (!x.color) x.color = ["#0f766e", "#be185d", "#1d4ed8", "#b45309", "#7c3aed"][i % 5];
+        if (x.mode === "rotate") {
+          x.rotate = x.rotate || {};
+          if (!x.rotate.cycle || !/^[白夜休]+$/.test(x.rotate.cycle)) x.rotate.cycle = "白夜休";
+          if (!x.rotate.anchor) x.rotate.anchor = dk(new Date());
+          x.rotate.dayStart = x.rotate.dayStart == null ? 8 * 60 : x.rotate.dayStart;
+          x.rotate.dayEnd = x.rotate.dayEnd == null ? 18 * 60 : x.rotate.dayEnd;
+          x.rotate.nightStart = x.rotate.nightStart == null ? 18 * 60 : x.rotate.nightStart;
+          x.rotate.nightEnd = x.rotate.nightEnd == null ? 8 * 60 : x.rotate.nightEnd;
+        } else {
+          x.mode = "fixed";
+          x.fixed = Object.assign({ workStart: 9 * 60, workEnd: 16 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 7 * 60, sleep: 23 * 60 }, x.fixed || {});
+        }
+      });
+      if (!state.people.some((x) => x.id === state.currentPerson)) state.currentPerson = state.people[0].id;
+    }
+  } catch (e) { console.warn("读取本地数据失败", e); }
+}
+let saveTimer = null;
+function saveState() {
+  if (!canStore) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+    catch (e) { toast("保存失败，可能存储空间满了"); }
+  }, 120);
+}
+/* 本机编号：每台手机第一次打开时生成一个，用来确认"这确实是我这台机器上的数据"。
+   它只存在本机，不会发给任何人，两台手机永远不会是同一个编号。 */
+function deviceTag() {
+  if (!state.deviceId) {
+    state.deviceId = (Date.now().toString(36) + Math.random().toString(36).slice(2, 5)).toUpperCase().slice(-6);
+    saveState();
+  }
+  return state.deviceId;
+}
+
+/* ============================== 吐司提示 ============================== */
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), 2600);
+}
+
+/* ============================== 分类识别 ============================== */
+function detectCat(text) {
+  // "买XX" 基本都是要出门采买，除非写明了是药、票、衣服这类
+  if (/买/.test(text) && !/买药|买票|买衣服|买鞋|买书|买手机|买家电|买家具|买礼物/.test(text)) return CATS[0];
+  for (const c of CATS) {
+    for (const k of c.kw) if (text.indexOf(k) >= 0) return c;
+  }
+  return DEFAULT_CAT;
+}
+
+/* ============================== 清真校验 ============================== */
+function halalCheck(text) {
+  const hits = [];
+  for (const g of HALAL_BLOCK) if (g.kw.some((k) => text.indexOf(k) >= 0)) hits.push({ level: "block", why: g.why, fix: g.fix });
+  for (const g of HALAL_SOFT) if (g.kw.some((k) => text.indexOf(k) >= 0)) hits.push({ level: "soft", why: g.why, fix: g.fix });
+  // 只说"肉"没说是什么肉 → 温和提醒一句，不吓人
+  if (text.indexOf("肉") >= 0 && !/牛|羊|鸡|鸭|鹅|鱼|虾|兔|清真/.test(text) && !hits.length) {
+    hits.push({ level: "soft", why: "没写清是什么肉", fix: "记得按家里的习惯选清真的牛羊肉或鸡肉。" });
+  }
+  const extra = (state.profile.avoid || "").split(/[,，、\s]+/).filter(Boolean);
+  extra.forEach((w) => { if (text.indexOf(w) >= 0) hits.push({ level: "block", why: "家里不吃「" + w + "」", fix: "换个做法或换食材。" }); });
+  return hits;
+}
+
+/* ============================== 时间表达解析 ============================== */
+const PERIODS = [
+  { re: /凌晨/, h: 5 * 60 }, { re: /清晨|早上|早晨|一早|明早|今早/, h: 6 * 60 + 30 },
+  { re: /上午/, h: 9 * 60 + 30 }, { re: /中午|晌午/, h: 12 * 60 },
+  { re: /下午/, h: 14 * 60 + 30 }, { re: /傍晚|黄昏/, h: 18 * 60 },
+  { re: /晚上|今晚|明晚|夜里|夜晚/, h: 19 * 60 + 30 }, { re: /半夜/, h: 23 * 60 }
+];
+
+/* ============================== 轮班 / 作息引擎 ============================== */
+const SHIFT_CHAR = { "白": "day", "夜": "night", "休": "off" };
+function personById(id) { return state.people.find((p) => p.id === id) || state.people[0]; }
+function currentPerson() { return personById(state.currentPerson); }
+function cycleOf(p) {
+  const raw = (p.rotate && p.rotate.cycle) || "白夜休";
+  const c = raw.split("").map((ch) => SHIFT_CHAR[ch] || "off");
+  return c.length ? c : ["day"];
+}
+/* 某人在某天是白班 / 夜班 / 休息 */
+function shiftTypeOn(p, key) {
+  if (!p || p.mode !== "rotate") return "work";
+  const cyc = cycleOf(p);
+  const a = fromKey(p.rotate.anchor || dk(new Date()));
+  const diff = Math.round((fromKey(key).getTime() - a.getTime()) / 86400000);
+  return cyc[((diff % cyc.length) + cyc.length) % cyc.length];
+}
+/* 某人某天的实际作息：轮班的人每天都不一样，这里现算 */
+function personOn(p, key) {
+  if (!p) return null;
+  if (p.mode === "rotate") {
+    const r = p.rotate, t = shiftTypeOn(p, key);
+    if (t === "night") {
+      return { type: "night", label: "夜班", workStart: r.nightStart, workEnd: r.nightEnd + 1440,
+               lunchStart: null, lunchEnd: null, wake: r.nightStart - 180, sleep: r.nightEnd + 60, spans: true,
+               text: toHM(r.nightStart) + "–明早 " + toHM(r.nightEnd) };
+    }
+    if (t === "off") {
+      return { type: "off", label: "休息", workStart: null, workEnd: null,
+               lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 8 * 60, sleep: 23 * 60, spans: false, text: "休息" };
+    }
+    return { type: "day", label: "白班", workStart: r.dayStart, workEnd: r.dayEnd,
+             lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: r.dayStart - 90, sleep: 23 * 60, spans: false,
+             text: toHM(r.dayStart) + "–" + toHM(r.dayEnd) };
+  }
+  const f = p.fixed;
+  return { type: "work", label: "上班", workStart: f.workStart, workEnd: f.workEnd,
+           lunchStart: f.lunchStart, lunchEnd: f.lunchEnd, wake: f.wake, sleep: f.sleep, spans: false,
+           text: toHM(f.workStart) + "–" + toHM(f.workEnd) };
+}
+/* 谁的事：看句子开头有没有点名（"提醒妈妈买药"） */
+function namePrefixRe(p) {
+  if (!p || !p.name || p.name === "我") return null;
+  const esc2 = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const alts = [p.name];
+  if (p.name === "妈妈") alts.push("我妈", "母亲", "妈");
+  if (p.name === "爸爸") alts.push("我爸", "父亲", "爸");
+  if (p.name === "老婆") alts.push("媳妇", "妻子");
+  if (p.name === "老公") alts.push("丈夫");
+  return new RegExp("^(提醒|让|叫|催|帮)?\\s*(" + alts.map(esc2).join("|") + ")\\s*");
+}
+function whoFromText(text) {
+  for (const p of state.people) {
+    const re = namePrefixRe(p);
+    if (re && re.test(text)) return p;
+  }
+  return null;
+}
+/* 和作息挂钩的锚点：AI 知道这个人今天几点上下班，「下班后」就不用你写时间了 */
+function anchorsFor(s) {
+  const list = [];
+  if (s && s.workEnd != null) {
+    list.push({ re: /下班后|下班以后|下了班|下班之后/, m: s.workEnd + 10, label: "下班后" });
+    list.push({ re: /到家后|回家后|回到家用/, m: s.workEnd + 40, label: "到家后" });
+  } else {
+    list.push({ re: /下班后|下班以后|下了班|下班之后|到家后|回家后/, m: 10 * 60, label: "休息日，按白天的空档" });
+  }
+  if (s && s.workStart != null) list.push({ re: /上班前|上班之前|出门前/, m: s.workStart - 30, label: "上班前" });
+  if (s && s.lunchStart != null) {
+    list.push({ re: /午休|中午休息/, m: s.lunchStart, label: "午休" });
+    list.push({ re: /午饭后|吃完午饭|午饭以后/, m: s.lunchEnd, label: "午饭后" });
+  }
+  list.push({ re: /晚饭后|吃完晚饭|饭后/, m: 19 * 60 + 30, label: "晚饭后" });
+  list.push({ re: /早饭后|吃完早饭/, m: 7 * 60 + 30, label: "早饭后" });
+  list.push({ re: /睡前|睡觉前|上床前/, m: (s ? s.sleep : 23 * 60) - 30, label: "睡前" });
+  list.push({ re: /起床后|醒来后|早上起来|起床/, m: (s ? s.wake : 7 * 60) + 10, label: "起床后" });
+  if (s && s.workEnd != null) list.push({ re: /下班/, m: s.workEnd, label: "下班" });
+  return list;
+}
+
+function findDate(seg, base) {
+  const b = new Date(base.getTime()); b.setHours(0, 0, 0, 0);
+  if (/大后天/.test(seg)) return { d: addDays(b, 3), hit: /大后天/ };
+  if (/后天/.test(seg)) return { d: addDays(b, 2), hit: /后天/ };
+  if (/明天|明日|明儿|次日/.test(seg)) return { d: addDays(b, 1), hit: /明天|明日|明儿|次日/ };
+  if (/今天|今日|今儿|今晚|今早/.test(seg)) return { d: b, hit: /今天|今日|今儿|今晚|今早/ };
+  const w = seg.match(/(下下|下个|下|这|本)?(?:个)?(?:周|星期|礼拜)([一二三四五六日天])/);
+  if (w) {
+    const map = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 };
+    const tgt = map[w[2]];
+    const dow = b.getDay();
+    let delta = (tgt - dow + 7) % 7;
+    if (/^下/.test(w[1] || "")) delta = delta === 0 ? 7 : delta + 7;
+    if (w[1] === "下下") delta += 7;
+    if (!w[1] && delta === 0) delta = 7; // 光说"周三"而今天就是周三 → 指下周三
+    return { d: addDays(b, delta), hit: new RegExp(w[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) };
+  }
+  if (/周末/.test(seg)) {
+    const delta = (6 - b.getDay() + 7) % 7 || 7;
+    return { d: addDays(b, delta), hit: /周末/ };
+  }
+  const md = seg.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]?/);
+  if (md) {
+    const y = b.getFullYear();
+    let d = new Date(y, +md[1] - 1, +md[2]);
+    if (d.getTime() < b.getTime() - 86400000) d = new Date(y + 1, +md[1] - 1, +md[2]);
+    return { d, hit: new RegExp(md[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) };
+  }
+  // 光说「15号」「每月1号」这种，找下一个该日
+  const day = seg.match(/(\d{1,2}|[一二三四五六七八九十]{1,3})\s*[号日]/);
+  if (day) {
+    let dn = /^\d+$/.test(day[1]) ? +day[1] : cn2num(day[1]);
+    const after = seg.charAt(day.index + day[0].length);
+    if (dn >= 1 && dn <= 31 && !/[楼线店桌窗院栋区]/.test(after)) {
+      let d = new Date(b.getFullYear(), b.getMonth(), dn);
+      if (dn < b.getDate()) d = new Date(b.getFullYear(), b.getMonth() + 1, dn);
+      return { d, hit: new RegExp(day[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) };
+    }
+  }
+  return null;
+}
+
+function findClock(seg) {
+  let m = seg.match(/(\d{1,2})\s*[:：]\s*(\d{1,2})/);
+  if (m && +m[1] < 24 && +m[2] < 60) {
+    let h = +m[1];
+    const pre = seg.slice(Math.max(0, m.index - 2), m.index);
+    if (/下午|傍晚|晚上|夜里/.test(pre) && h < 12) h += 12;
+    return { h, mi: +m[2], idx: m.index, len: m[0].length, prefix: "" };
+  }
+  const re = /(凌晨|清晨|早上|早晨|一早|上午|中午|下午|傍晚|晚上|夜里|夜晚)?\s*(\d{1,2}|[一二三四五六七八九十两]{1,3})\s*[点時时]\s*(半|[0-5]?\d|[一二三四五六七八九十]{1,3}|一刻|三刻)?\s*分?/g;
+  let mm, best = null;
+  while ((mm = re.exec(seg))) {
+    const prefix = mm[1] || "", hourRaw = mm[2], minRaw = mm[3] || "";
+    let h = /^\d+$/.test(hourRaw) ? +hourRaw : cn2num(hourRaw);
+    if (h == null || h > 24) continue;
+    let mi = 0;
+    if (minRaw === "半") mi = 30;
+    else if (minRaw === "一刻") mi = 15;
+    else if (minRaw === "三刻") mi = 45;
+    else if (minRaw) { mi = /^\d+$/.test(minRaw) ? +minRaw : cn2num(minRaw); if (mi == null || mi > 59) mi = 0; }
+    // 中文数字守卫：别把"一点盐""多点菜"当成时间
+    if (!/^\d+$/.test(hourRaw) && !prefix && !minRaw) {
+      const after = seg.charAt(mm.index + mm[0].length);
+      if (after && /[儿盐糖油水醋菜品心点意思个事]/.test(after)) continue;
+      const before = seg.charAt(mm.index - 1);
+      if (before && /[多差快超]/.test(before)) continue;
+    }
+    if (/下午|傍晚|晚上|夜里|夜晚/.test(prefix) && h < 12) h += 12;
+    if (/凌晨|清晨|早上|早晨|一早|上午/.test(prefix) && h === 12) h = 0;
+    if (h === 24) h = 0;
+    if (!best || mm.index < best.idx) best = { h, mi, idx: mm.index, len: mm[0].length, prefix };
+  }
+  return best;
+}
+
+function findRelative(seg, nowMin) {
+  let m = seg.match(/([一二三四五六七八九十两\d]{1,3})\s*个?\s*小时后/);
+  if (m) { const n = cn2num(m[1]); if (n) return { m: nowMin + n * 60, hit: m[0] }; }
+  m = seg.match(/([一二三四五六七八九十两\d]{1,3})\s*分钟后/);
+  if (m) { const n = cn2num(m[1]); if (n) return { m: nowMin + n, hit: m[0] }; }
+  m = seg.match(/半个?小时后|半小时后/);
+  if (m) return { m: nowMin + 30, hit: m[0] };
+  m = seg.match(/一会儿|待会儿|待会|过会儿|等会儿|等会/);
+  if (m) return { m: nowMin + 30, hit: m[0] };
+  return null;
+}
+
+function findDuration(seg) {
+  let m = seg.match(/([一二三四五六七八九十两\d]{1,3})\s*个?\s*小时/);
+  if (m && !/小时(后|以后)/.test(seg.slice(m.index))) { const n = cn2num(m[1]); if (n) return n * 60; }
+  m = seg.match(/([一二三四五六七八九十两\d]{1,3})\s*分钟/);
+  if (m && !/分钟(后|以后)/.test(seg.slice(m.index))) { const n = cn2num(m[1]); if (n && n >= 5) return n; }
+  if (/半个?小时/.test(seg) && !/半个?小时(后|以后)/.test(seg)) return 30;
+  return null;   // 没说时长就交给"习惯"或分类默认值
+}
+
+/* 时间段：「下午3点到5点开会」→ 开始 15:00，时长 120 分钟 */
+function findRange(seg) {
+  const re = /(凌晨|清晨|早上|早晨|上午|中午|下午|傍晚|晚上|夜里)?\s*(\d{1,2}|[一二三四五六七八九十两]{1,3})\s*[点時时]\s*(半|[0-5]?\d)?[^\d一二三四五六七八九十]{0,2}(?:到|至|~|～|-|—|–)\s*(凌晨|清晨|早上|早晨|上午|中午|下午|傍晚|晚上|夜里)?\s*(\d{1,2}|[一二三四五六七八九十两]{1,3})\s*[点時时]\s*(半|[0-5]?\d)?/;
+  const m = seg.match(re);
+  if (!m) return null;
+  const mk = (pre, hs, ms) => {
+    let h = /^\d+$/.test(hs) ? +hs : cn2num(hs);
+    if (h == null || h > 24) return null;
+    if (h === 24) h = 0;
+    const pm = /下午|傍晚|晚上|夜里/.test(pre || "");
+    const am = /凌晨|清晨|早上|早晨|上午/.test(pre || "");
+    if (pm && h < 12) h += 12;
+    if (am && h === 12) h = 0;
+    let mi = 0;
+    if (ms === "半") mi = 30; else if (ms != null) mi = parseInt(ms, 10) || 0;
+    return h * 60 + mi;
+  };
+  const a = mk(m[1] || seg.slice(Math.max(0, m.index - 2), m.index), m[2], m[3]);
+  let b = mk(m[4], m[5], m[6]);
+  if (a == null || b == null) return null;
+  if (b <= a && !m[4] && b + 12 * 60 > a) b += 12 * 60;   // 「下午3点到5点」里的 5 点指 17 点
+  if (b <= a) return null;
+  return { start: a, dur: b - a };
+}
+
+/* 重复：「每天」「工作日」「周末」「每周三」「每月1号」 */
+function findRepeat(seg) {
+  if (/每天|天天|每日|每晚/.test(seg)) return "daily";
+  if (/工作日|上班日|周一到周五|星期一到星期五/.test(seg)) return "weekday";
+  if (/周末|周六日|星期六日|双休/.test(seg)) return "weekend";
+  if (/每周|每星期|每礼拜/.test(seg)) return "weekly";
+  if (/每月|每个月/.test(seg)) return "monthly";
+  return "none";
+}
+function repeatName(r) {
+  return r === "daily" ? "每天" : r === "weekday" ? "工作日" : r === "weekend" ? "周末"
+    : r === "weekly" ? "每周" : r === "monthly" ? "每月" : "";
+}
+
+/* 从历史里学：同一类事记满 3 次以上、时间又不算散，就记住它 */
+function learned(catKey) {
+  const today = dk(new Date());
+  const past = state.events.filter((e) => e.cat === catKey && e.date < today);
+  if (past.length < 3) return null;
+  const starts = past.map((e) => e.start).sort((a, b) => a - b);
+  const durs = past.map((e) => e.dur).sort((a, b) => a - b);
+  if (starts[starts.length - 1] - starts[0] > 210) return null;   // 时间太散，说明还没规律，别瞎猜
+  const med = starts[Math.floor(starts.length / 2)];             // 用中位数，个别极端值带不偏
+  return { start: Math.round(med / 5) * 5, dur: durs[Math.floor(durs.length / 2)], n: past.length };
+}
+function learnedHabits() {
+  const rows = [];
+  CATS.concat([DEFAULT_CAT]).forEach((c) => {
+    const l = learned(c.key);
+    if (l) rows.push(c.emoji + " " + c.key + " —— 一般 " + toHM(l.start) + "，约 " + l.dur + " 分钟（记过 " + l.n + " 次）");
+  });
+  return rows;
+}
+
+// 没写时间时，按"这个人当天的作息（可能是白班/夜班/休息）+ 以往习惯 + 事情种类"给一个合理时间
+function guessByCategory(cat, s, nowMin) {
+  const l = learned(cat.key);
+  if (l) return { m: l.start, why: "按你以往的习惯（多在 " + toHM(l.start) + "）" };
+  if (s && s.type === "night") {   // 夜班那天：饭要在上班前吃
+    if (cat.key === "做饭") return { m: 16 * 60, why: "上夜班前先做" };
+    if (cat.key === "吃饭") return { m: 17 * 60 + 30, why: "夜班前吃饭" };
+  }
+  const off = !s || s.workEnd == null;      // 休息日
+  const we = off ? 10 * 60 : s.workEnd;     // 有班就以"下班"为基准
+  const ws = (!s || s.workStart == null) ? 9 * 60 : s.workStart;
+  const tag = off ? "休息日，" : "";
+  switch (cat.key) {
+    case "买菜": return { m: we + 10, why: tag + (off ? "白天去" : "下班顺路") };
+    case "做饭": return { m: Math.max(17 * 60 + 30, we + 60), why: "到家后做饭" };
+    case "吃饭": return { m: nowMin < 12 * 60 ? 12 * 60 : 18 * 60 + 30, why: "饭点" };
+    case "工作": return { m: ws + 30, why: "上班后处理" };
+    case "家人": return { m: we + 30, why: tag + "有空的时候" };
+    case "运动": return { m: 19 * 60 + 30, why: "晚饭后活动" };
+    case "健康": return { m: off ? 9 * 60 : ws + 60, why: tag + "白天办" };
+    case "家务": return { m: 20 * 60, why: "晚上收拾" };
+    case "事务": return { m: off ? 10 * 60 : ws + 60, why: tag + "白天办" };
+    case "学习": return { m: 20 * 60, why: "晚上安静" };
+    case "个人": return { m: 19 * 60, why: "晚饭后" };
+    case "出行": return { m: we + 30, why: tag + "出发" };
+    default: return { m: clamp(Math.ceil((nowMin + 30) / 30) * 30, 0, 23 * 60), why: "最近的一个整半点" };
+  }
+}
+
+const FILLER = /记得|提醒我|提醒一下|提醒|别忘了|别忘记|不要忘了|我要|我想|帮我|给我|安排一下|安排|设置|添加到日程|加到日程|加进日程|放进日程|日程|然后|接着|一下子|一下|吧|哦|呀|呢|啊|嘛|，|。|,|\.|、|；|;/g;
+function cleanTitle(seg, cutList) {
+  let t = seg;
+  cutList.forEach((r) => { if (r) t = t.replace(r, " "); });
+  t = t.replace(FILLER, " ")
+       .replace(TIMEISH, " ")
+       .replace(/([一二三四五六七八九十两\d]{1,3})\s*个?\s*(小时|分钟)|半个?小时/g, " ")
+       .replace(/每天|天天|每日|每晚|每周|每星期|每礼拜|每月|每个月/g, " ")
+       .replace(/(^|\s)(到|至|每|~|～|-|—|–)(\s|$)/g, " ");
+  t = t.replace(/[ \t\u3000]+/g, " ").trim();
+  let prev;
+  do { prev = t; t = t.replace(/([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])/g, "$1$2"); } while (t !== prev);
+  t = t.replace(/^(我们|我|咱家|咱|你|您|家里)+/, "").trim();
+  t = t.replace(/^[的了要就再去还没]+/, "").replace(/[的了]+$/, "").trim();
+  return t;
+}
+
+/* 时间类词的总表：既用于切句判断"这句还剩什么内容"，也用于去噪 */
+const TIMEISH = /(凌晨|清晨|早上|早晨|一早|上午|中午|下午|傍晚|晚上|夜里|夜晚|今天|今日|明天|明日|明儿|后天|大后天|工作日|周末|下班后|下班|上班前|上班|到家后|回家后|午休|午饭后|晚饭后|早饭后|睡前|睡觉前|起床后|醒来后|半小时后|半个小时后|一会儿|待会儿|待会|等会儿|等会|\d{1,2}\s*[:：]\s*\d{1,2}|[0-9一二三四五六七八九十两]{1,3}\s*[点時时]\s*(半|一刻|三刻|[0-9一二三四五六七八九十]{1,3})?|[一二三四五六七八九十两\d]{1,3}\s*个?\s*小时后|[一二三四五六七八九十两\d]{1,3}\s*分钟后|(下下|下个|下|这|本)?个?(周|星期|礼拜)[一二三四五六日天]|\d{1,2}\s*月\s*\d{1,2}\s*[日号]?)/g;
+function coreOf(s) {
+  return s.replace(FILLER, " ").replace(TIMEISH, " ").replace(/[的了要就再还有和与把给帮我的、,，。！!？?~～\s]/g, "").trim();
+}
+
+/* 把一句话切成多条（"买菜，然后做饭"） */
+function splitSegments(text) {
+  const parts = text.split(/[，,；;]|然后|接着|之后|完了再|再/).map((s) => s.trim()).filter(Boolean);
+  const out = [];
+  let carry = "";
+  for (const p of parts) {
+    if (coreOf(p).length < 2) { carry += p; continue; }   // "我下班后记得提醒我" 这类只带时间不含事情，并入下一句
+    out.push(carry + p); carry = "";
+  }
+  if (carry) { if (out.length) out[out.length - 1] += carry; else out.push(carry); }
+  return out.length ? out : [text];
+}
+
+/* ============================== 主解析函数 ============================== */
+function parseInput(raw) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const text = raw.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 65248)).trim();
+  const segs = splitSegments(text);
+  const items = [];
+  const halal = halalCheck(text);
+  const fallbackWho = currentPerson();
+
+  segs.forEach((seg, i) => {
+    const cat = detectCat(seg);
+    const cutList = [];
+    const segWho = whoFromText(seg) || fallbackWho;   // 「提醒妈妈买药」→ 算在妈妈头上
+    const npRe = namePrefixRe(segWho);
+    if (npRe && npRe.test(seg)) cutList.push(npRe);
+    let date = findDate(seg, now);
+    if (date) cutList.push(date.hit);
+    // 先确定是哪一天，才知道这个人那天上什么班
+    const sched = personOn(segWho, dk(date ? date.d : now));
+    let startMin = null, why = "";
+    const rel = findRelative(seg, nowMin);
+    const clock = findClock(seg);
+    const anc = anchorsFor(sched).find((a) => a.re.test(seg));
+    const range = findRange(seg);   // 「下午3点到5点」给的是时长
+    const rep = findRepeat(seg);    // 「每天」「每周三」「每月1号」
+
+    if (clock) { startMin = clock.h * 60 + clock.mi; why = "你指定的时间"; cutList.push(new RegExp(seg.substr(clock.idx, clock.len).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))); }
+    else if (rel) { startMin = rel.m; why = "从现在往后算"; cutList.push(new RegExp(rel.hit)); if (!date) date = { d: new Date(now.getFullYear(), now.getMonth(), now.getDate()), hit: null }; }
+    else if (anc) { startMin = anc.m; why = anc.label + "（按你设的作息）"; cutList.push(anc.re); }
+    else {
+      const per = PERIODS.find((x) => x.re.test(seg));
+      if (per) { startMin = per.h; why = "按习惯放在这个时段"; cutList.push(per.re); }
+      else { const g = guessByCategory(cat, sched, nowMin); startMin = g.m; why = g.why; }
+    }
+
+    let dateObj = date ? date.d : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let dur = range ? range.dur : findDuration(seg);
+    if (dur == null) { const lr = learned(cat.key); dur = lr ? lr.dur : cat.dur; }
+    let title = cleanTitle(seg, cutList);
+    if (!title) title = cat.key === "其他" ? "待办" : cat.key;
+    if (i > 0 && !clock && !rel && !anc) {
+      startMin = items[i - 1].startMin + items[i - 1].dur + 15;
+      dateObj = fromKey(items[i - 1].dateKey);
+      date = { d: dateObj, hit: null };   // 跟在上一件事之后，也跟它同一天
+      why = "接在上一件事之后";
+    }
+    if (startMin >= 24 * 60) { startMin -= 24 * 60; dateObj = addDays(dateObj, 1); }
+
+    // 工作日/周末的固定提醒，第一次要落在对的日子上（周六建的工作日提醒直接落到周一）
+    if (rep === "weekday" || rep === "weekend") {
+      const dw = dateObj.getDay(), isWk = dw === 0 || dw === 6;
+      if (rep === "weekday" && isWk) dateObj = addDays(dateObj, dw === 6 ? 2 : 1);
+      if (rep === "weekend" && !isWk) dateObj = addDays(dateObj, 6 - dw);
+    }
+    // 固定提醒如果今天这个点已经过了，就从下一次开始，别在今天摆一条已经过去的
+    if (rep !== "none" && !date && dk(dateObj) === dk(now) && startMin < nowMin) {
+      dateObj = addDays(dateObj, 1);
+      const dw2 = dateObj.getDay();
+      if (rep === "weekday" && (dw2 === 0 || dw2 === 6)) dateObj = addDays(dateObj, dw2 === 6 ? 2 : 1);
+      if (rep === "weekend" && dw2 !== 0 && dw2 !== 6) dateObj = addDays(dateObj, 6 - dw2);
+    }
+
+    // 时间已经过去、而且没说哪一天 → 顺延到明天。明天可能是另一个班，得按明天的作息重算一遍
+    let rolled = false;
+    const sameDay = dk(dateObj) === dk(now);
+    if (sameDay && startMin < nowMin - 5 && !date && rep === "none") {
+      dateObj = addDays(dateObj, 1); rolled = true;
+      if (!clock && !rel) {
+        const s2 = personOn(segWho, dk(dateObj));
+        const a2 = anchorsFor(s2).find((a) => a.re.test(seg));
+        if (anc && a2) { startMin = a2.m; why = a2.label + "（按明天的作息）"; }
+        else { const g2 = guessByCategory(cat, s2, nowMin); startMin = g2.m; why = g2.why; }
+        if (startMin >= 24 * 60) { startMin -= 24 * 60; dateObj = addDays(dateObj, 1); }
+      }
+    }
+    if (sameDay && startMin < nowMin - 5 && date && !clock && !rel) {
+      startMin = clamp(Math.ceil((nowMin + 20) / 10) * 10, 0, 23 * 60 + 30); rolled = false;
+    }
+    const key = dk(dateObj);
+    const slot = findFreeSlot(key, startMin, dur, null);
+    items.push({
+      title, cat, dateKey: key, startMin: slot.start, dur, why, who: segWho.id,
+      moved: slot.moved, blocker: slot.blocker ? slot.blocker.title : "",
+      rolled, note: "", repeat: rep,
+      repeatUntil: rep === "none" ? null : dk(addDays(fromKey(key), 120))
+    });
+  });
+
+  return { items, halal, segments: segs };
+}
+
+/* ============================== 排期避让 ============================== */
+/* 重复日程不预先展开成几百条，看哪天就现算哪天 */
+function occurrenceOf(e, key) {
+  if (!e.repeat || e.repeat === "none") return e.date === key;
+  if (key < e.date) return false;
+  if (e.repeatUntil && key > e.repeatUntil) return false;
+  if ((e.skip || []).indexOf(key) >= 0) return false;
+  const a = fromKey(e.date), b = fromKey(key);
+  const diff = Math.round((b.getTime() - a.getTime()) / 86400000);
+  if (e.repeat === "daily") return diff >= 0;
+  if (e.repeat === "weekday") return b.getDay() >= 1 && b.getDay() <= 5;
+  if (e.repeat === "weekend") return b.getDay() === 0 || b.getDay() === 6;
+  if (e.repeat === "weekly") return diff % 7 === 0;
+  if (e.repeat === "monthly") return a.getDate() === b.getDate();
+  return false;
+}
+function eventsOn(key) {
+  const out = [];
+  for (const e of state.events) {
+    if (!occurrenceOf(e, key)) continue;
+    const occ = Object.assign({}, e, { occ: key });
+    if (e.repeat && e.repeat !== "none") occ.done = (e.doneDates || []).indexOf(key) >= 0;
+    out.push(occ);
+  }
+  return out.sort((x, y) => x.start - y.start);
+}
+function findFreeSlot(key, startMin, dur, ignoreId) {
+  const evs = eventsOn(key).filter((e) => e.id !== ignoreId);
+  let cur = clamp(startMin, 0, 23 * 60 + 30), moved = false, blocker = null, guard = 0;
+  while (guard++ < 80) {
+    const end = cur + dur;
+    const hit = evs.find((e) => cur < e.start + e.dur - 1 && e.start < end - 1);
+    if (!hit) break;
+    if (!moved) blocker = hit;
+    moved = true;
+    cur = hit.start + hit.dur + 5;
+    if (cur > 23 * 60 + 30) { cur = 8 * 60; break; }
+  }
+  return { start: cur, moved, blocker };
+}
+
+/* ============================== 应用解析结果 ============================== */
+function applyParsed(parsed, echo) {
+  const n = parsed.items.length;
+  const added = [];
+  parsed.items.forEach((it) => {
+    const e = {
+      id: uid(), date: it.dateKey, start: it.startMin, dur: it.dur,
+      title: it.title, note: it.note || "", cat: it.cat.key, done: false, created: Date.now(),
+      who: it.who || state.currentPerson
+    };
+    if (it.repeat && it.repeat !== "none") {
+      e.repeat = it.repeat; e.repeatUntil = it.repeatUntil; e.skip = []; e.doneDates = [];
+    }
+    state.events.push(e);
+    added.push(e);
+  });
+  saveState(); render();
+  const last = added[added.length - 1];
+  let msg = n > 1 ? "安排好了 " + n + " 件事" : "已安排：" + last.title;
+  msg += " · " + dayShort(last.date) + " " + toHM(last.start);
+  if (parsed.items[0].why) msg += "（" + parsed.items[0].why + "）";
+  if (parsed.items.some((x) => x.moved)) {
+    const m = parsed.items.find((x) => x.moved);
+    msg = "已避开「" + m.blocker + "」，改到 " + toHM(m.start);
+  }
+  if (parsed.items.some((x) => x.rolled)) msg += "（这个点已经过了，排到明天）";
+  if (parsed.items.some((x) => x.repeat && x.repeat !== "none")) {
+    const r = parsed.items.find((x) => x.repeat && x.repeat !== "none");
+    msg += "，以后" + repeatName(r.repeat) + "都提醒";
+  }
+  toast(msg);
+  if (parsed.halal.length) {
+    const h = parsed.halal.find((x) => x.level === "block") || parsed.halal[0];
+    setTimeout(() => toast((h.level === "block" ? "⚠️ 提醒：" : "ℹ️ 注意：") + h.why + "，" + h.fix), 2700);
+  }
+  if (echo) $("#nlInput").value = "";
+}
+function dayShort(key) {
+  const t = dk(new Date());
+  if (key === t) return "今天";
+  if (key === dk(addDays(new Date(), 1))) return "明天";
+  if (key === dk(addDays(new Date(), 2))) return "后天";
+  const d = fromKey(key);
+  return (d.getMonth() + 1) + "月" + d.getDate() + "日 " + WEEK[d.getDay()];
+}
+
+/* ============================== 常识轮换 ============================== */
+/* 家里人爱吃，饮食烹饪类的小常识抽中概率给高一点（权重 2） */
+const FOOD_TIP_RE = /炒|煮|蒸|炖|煎|炸|烤|锅|油|盐|糖|醋|米|面|蛋|肉|菜|汤|冰箱|食材|豆浆|土豆|蒜|姜|葱|水果|砧板|焯|炖/;
+function tipPool() {
+  const pool = [];
+  TIPS.forEach((t, i) => {
+    if (state.seenTips.indexOf(i) >= 0) return;
+    const w = FOOD_TIP_RE.test(t) ? 2 : 1;
+    for (let k = 0; k < w; k++) pool.push(i);
+  });
+  return pool;
+}
+function nextTip(force) {
+  if (!state.seenTips) state.seenTips = [];
+  let pool = tipPool();
+  if (!pool.length) { state.seenTips = []; pool = tipPool(); }
+  const idx = pool[Math.floor(Math.random() * pool.length)];
+  state.seenTips.push(idx);
+  if (state.seenTips.length > TIPS.length - 6) state.seenTips = state.seenTips.slice(-6);
+  if (force) saveState();
+  return TIPS[idx];
+}
+
+/* ============================== 视图状态 ============================== */
+let viewKey = dk(new Date());
+const CATMAP = {}; CATS.forEach((c) => (CATMAP[c.key] = c)); CATMAP[DEFAULT_CAT.key] = DEFAULT_CAT;
+function catOf(key) { return CATMAP[key] || DEFAULT_CAT; }
+
+/* ============================== 渲染 ============================== */
+function render() {
+  renderHead();
+  renderList();
+  renderTimeline();
+  renderShopBadge();
+}
+function renderHead() {
+  const d = fromKey(viewKey), today = dk(new Date());
+  let tag = "";
+  if (viewKey === today) tag = "今天";
+  else if (viewKey === dk(addDays(new Date(), 1))) tag = "明天";
+  else if (viewKey === dk(addDays(new Date(), -1))) tag = "昨天";
+  $("#dateMain").textContent = (d.getMonth() + 1) + "月" + d.getDate() + "日 " + WEEK[d.getDay()] + (tag ? " · " + tag : "");
+  const evs = eventsOn(viewKey);
+  $("#dateSub").textContent = evs.length
+    ? evs.length + " 件事 · " + toHM(evs[0].start) + " 开始 · " + toHM(evs[evs.length - 1].start + evs[evs.length - 1].dur) + " 结束"
+    : "还没有安排，下面说一句就行";
+  $("#listTitle").textContent = (viewKey === today ? "今天" : dayShort(viewKey)) + "的安排";
+  renderPeople();
+}
+function renderPeople() {
+  // 名字只用来切换"这是谁的日程"，不显示谁几点上班
+  $("#peopleStrip").innerHTML = state.people.map((p) => {
+    const on = p.id === state.currentPerson;
+    return '<button class="pchip' + (on ? " on" : "") + '" data-p="' + p.id + '"' + (on ? ' style="color:' + p.color + '"' : "") + '>' +
+      '<span class="pdot" style="background:' + p.color + '"></span>' + esc(p.name) + '</button>';
+  }).join("");
+}
+function renderList() {
+  const box = $("#todayList");
+  const evs = eventsOn(viewKey);
+  $("#todayCount").textContent = evs.length ? evs.length + " 件" : "";
+  if (!evs.length) {
+    box.innerHTML = '<div class="empty"><b>还没有安排</b>在下面输入一句话就行，比如「我下班后记得提醒我买青椒」</div>';
+    return;
+  }
+  box.innerHTML = evs.map((e, i) => {
+    const c = catOf(e.cat);
+    const rep = (e.repeat && e.repeat !== "none") ? '<span class="tag">🔁 ' + repeatName(e.repeat) + '</span>' : "";
+    const po = personById(e.who || state.currentPerson);
+    const whoTag = state.people.length > 1
+      ? '<span class="tag who" style="background:' + po.color + '1a;color:' + po.color + '">' + esc(po.name) + '</span>' : "";
+    return '<div class="card' + (e.done ? " done" : "") + '" style="border-left-color:' + c.color + '">' +
+      '<div class="ctime"><b>' + toHM(e.start) + '</b><span>' + toHM(e.start + e.dur) + '</span></div>' +
+      '<div class="cbody">' +
+        '<div class="ctitle"><span class="cnum" style="background:' + c.color + '1f;color:' + c.color + '">' + numBadge(i) + '</span>' + esc(e.title) + '</div>' +
+        '<div class="cmeta"><span class="tag cat">' + c.emoji + ' ' + c.key + '</span><span class="tag">' + e.dur + ' 分钟</span>' + whoTag + rep + '</div>' +
+        (e.note ? '<div class="cnote">' + esc(e.note) + '</div>' : "") +
+      '</div>' +
+      '<div class="cops">' +
+        '<button data-act="done" data-id="' + e.id + '" data-occ="' + e.occ + '" title="完成">' + (e.done ? "↩" : "✓") + '</button>' +
+        '<button data-act="edit" data-id="' + e.id + '" data-occ="' + e.occ + '" title="修改">✏️</button>' +
+        '<button data-act="del" data-id="' + e.id + '" data-occ="' + e.occ + '" title="删除">🗑</button>' +
+      '</div></div>';
+  }).join("");
+}
+/* 编号：①②③… 让列表和横轴上的位置对得上 */
+function numBadge(i) {
+  const N = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳";
+  return i < N.length ? N.charAt(i) : String(i + 1);
+}
+/* 一天的时间分布：上午 00–12 一条、下午 12–24 一条，编号用引线指到轴上
+   分成两条之后同一个宽度表示 12 小时而不是 24 小时，点起来准得多 */
+function renderTimeline() {
+  const box = $("#tl");
+  const evs = eventsOn(viewKey);
+  const isToday = viewKey === dk(new Date());
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const HALVES = [{ from: 0, to: 720 }, { from: 720, to: 1440 }];
+  let html = "";
+  HALVES.forEach((h) => {
+    // 编号：算在自己开始的那半段上方，挨太近的错开一行
+    const mine = [];
+    evs.forEach((e, i) => {
+      if (e.start < h.from || e.start >= h.to) return;
+      mine.push({ e: e, i: i, p: clamp(((e.start - h.from) / 720) * 100, 3, 97), lane: 0 });
+    });
+    let lastP = -99, lane = 0;
+    mine.forEach((m) => {
+      lane = (m.p - lastP < 9) ? (lane === 0 ? 1 : 0) : 0;
+      lastP = m.p;
+      m.lane = lane;
+    });
+    const marksH = mine.some((m) => m.lane === 1) ? 48 : 26;
+    let row = '<div class="hmarks" style="height:' + marksH + 'px">';
+    mine.forEach((m) => {
+      const c = catOf(m.e.cat);
+      const top = m.lane === 1 ? 22 : 0;
+      row += '<span class="hnum" data-id="' + m.e.id + '" style="left:' + m.p.toFixed(2) + '%;top:' + top + 'px;background:' + c.color + '1f;color:' + c.color + '">' + numBadge(m.i) + '</span>' +
+             '<span class="hstem" style="left:' + m.p.toFixed(2) + '%;top:' + (top + 18) + 'px;height:' + (marksH - top - 18) + 'px"></span>';
+    });
+    if (!evs.length && h.from === 0) row += '<div class="hempty">还没有安排，点这两条线就能加</div>';
+    row += '</div>';
+    // 轨道 + 每 3 小时一条参考线（两端的 00 和 12 由轨道边缘表示）
+    row += '<div class="htrack" data-from="' + h.from + '">';
+    [180, 360, 540].forEach((off) => {
+      row += '<span class="hgrid" style="left:' + ((off / 720) * 100) + '%"></span>';
+    });
+    evs.forEach((e) => {
+      const s = Math.max(e.start, h.from), en = Math.min(e.start + e.dur, h.to);
+      if (en <= s) return;   // 跨中午的会拆成两段，两条轴上各画一半
+      const c = catOf(e.cat);
+      const l = ((s - h.from) / 720) * 100;
+      const w = Math.max(0.9, ((en - s) / 720) * 100);
+      row += '<span class="hseg" data-id="' + e.id + '" title="' + esc(toHM(e.start) + " " + e.title) + '" style="left:' + l.toFixed(3) + '%;width:' + Math.min(w, 100 - l).toFixed(3) + '%;background:' + c.color + (e.done ? "59" : "cc") + '"></span>';
+    });
+    if (isToday && nowMin >= h.from && nowMin < h.to) {
+      row += '<span class="hnow" style="left:' + (((nowMin - h.from) / 720) * 100).toFixed(2) + '%"></span>';
+    }
+    row += '</div>';
+    row += '<div class="hticks">' +
+      [0, 180, 360, 540, 720].map((off) => {
+        const total = h.from + off;
+        return '<span style="left:' + ((off / 720) * 100) + '%">' + (total === 1440 ? "24" : pad(total / 60)) + '</span>';
+      }).join("") + '</div>';
+    html += '<div class="hblock">' + row + '</div>';
+  });
+  box.innerHTML = html;
+  const hint = $("#tlHint");
+  if (hint) hint.textContent = (isToday ? "现在 " + toHM(nowMin) + " · " : "") + "点线或编号就能改";
+}
+function renderShopBadge() {
+  const left = state.shop.filter((s) => !s.done).length;
+  const b = $("#shopBadge");
+  b.textContent = left;
+  b.classList.toggle("hidden", left === 0);
+}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* ============================== 弹层 ============================== */
+function openSheet(title, html, after) {
+  $("#sheetTitle").textContent = title;
+  $("#sheetBody").innerHTML = html;
+  $("#sheet").classList.add("on");
+  $("#mask").classList.remove("hidden");
+  requestAnimationFrame(() => $("#mask").classList.add("on"));
+  if (after) after();
+}
+function closeSheet() {
+  $("#sheet").classList.remove("on");
+  $("#mask").classList.remove("on");
+  setTimeout(() => $("#mask").classList.add("hidden"), 220);
+}
+
+/* ---------- 设置（家人作息） ---------- */
+function openSettings() {
+  const p = state.profile;
+  const habits = learnedHabits();
+  const learnHtml = habits.length
+    ? '<div class="note">📈 AI 从历史记录里学到了这些（只说事情、不说时间，就按这些点排）：<br>' + habits.join("<br>") + '</div>'
+    : '<div class="note">📈 同一类事记满 3 次以上、时间又比较固定的话，AI 会记住你习惯的点，以后不用写几点。</div>';
+  const roster = state.people.map((pp) => {
+    const s = personOn(pp, viewKey);
+    const desc = pp.mode === "rotate"
+      ? "轮班 · " + (pp.rotate.cycle || "白夜休") + " 循环 · " + dayShort(viewKey) + "是" + s.label + " " + s.text
+      : "固定班 · " + toHM(pp.fixed.workStart) + "–" + toHM(pp.fixed.workEnd) + " · 午休 " + toHM(pp.fixed.lunchStart) + "–" + toHM(pp.fixed.lunchEnd);
+    return '<div class="personrow"><span class="pdot" style="background:' + pp.color + '"></span>' +
+      '<div class="pinfo"><b>' + esc(pp.name) + (pp.id === state.currentPerson ? ' <span class="psub">当前</span>' : "") + '</b><span>' + esc(desc) + '</span></div>' +
+      '<button class="mini" data-edit="' + pp.id + '">修改</button></div>';
+  }).join("");
+  openSheet("家人作息（AI 按这个安排）",
+    '<div class="note">两种模式：<b>固定班</b>只要填上下班时间；<b>轮班</b>写一串规律，一天一个字 ——' +
+    '「白夜休」就是上一天白班、再上一天夜班、再歇一天，一直循环。上面那排名字里选中的是谁，下面输入栏说的「下班后」就是谁。</div>' +
+    '<div style="height:12px"></div>' + roster +
+    '<button class="btn ghost" id="addPerson">＋ 添加家人</button>' +
+    '<div style="height:16px"></div>' +
+    '<div class="frow"><label>全家忌口（逗号分隔，AI 会一起避开）</label><input id="setAvoid" value="' + esc(p.avoid) + '" placeholder="例如：香菜, 内脏"></div>' +
+    '<div style="height:4px"></div>' + learnHtml + '<div style="height:10px"></div>' +
+    '<div class="note warn">🥩 清真模式已开启：猪肉、猪油、动物血、料酒一律会拦下来并给出替换建议；加工肉类（香肠、肉丸、火锅底料等）会提醒你确认清真标识。</div>' +
+    '<div style="height:12px"></div>' +
+    '<button class="btn" id="setSave">保存</button>' +
+    '<div style="height:18px"></div>' +
+    '<div class="note">🔒 <b>隐私</b>：你的日程只存在这台手机里（本机编号 <b>' + deviceTag() + '</b>），App 不联网、不上传，家里人在自己手机上打开同一个网址，看到的是他们各自的空白本子，互相看不见。<br>' +
+    '唯一要留意的是下面那个「导出备份」——那段文字里有你全部日程，别发到群里或转给家人。</div>' +
+    '<div style="height:10px"></div>' +
+    '<div class="note">数据存在这台手机本地，换手机或清了浏览器数据会丢，可以备份一下。</div>' +
+    '<div style="height:10px"></div>' +
+    '<button class="btn ghost" id="setExport">导出备份（复制文本）</button>' +
+    '<button class="btn ghost" id="setImport">从备份文本恢复</button>' +
+    '<button class="btn danger" id="setClear">清空全部日程</button>' +
+    (canStore ? "" : '<div style="height:10px"></div><div class="note warn">当前打开方式不支持本地保存（常见于手机直接打开本地 .html 文件）。建议用电脑起个小服务、手机用网址打开，数据才能长期保留。</div>'),
+    () => {
+      $("#setSave").onclick = () => { p.avoid = $("#setAvoid").value.trim(); saveState(); toast("忌口已保存"); };
+      $("#sheetBody").querySelectorAll("[data-edit]").forEach((b) => { b.onclick = () => openPerson(b.dataset.edit); });
+      $("#addPerson").onclick = () => {
+        const names = ["老婆", "老公", "孩子", "爷爷", "奶奶", "姥姥", "姥爷"];
+        const used = state.people.map((x) => x.name);
+        const nm = names.filter((n) => used.indexOf(n) < 0)[0] || ("家人" + (state.people.length + 1));
+        const np = {
+          id: "p" + uid(), name: nm,
+          color: ["#0f766e", "#be185d", "#1d4ed8", "#b45309", "#7c3aed", "#0891b2"][state.people.length % 6],
+          mode: "fixed",
+          fixed: { workStart: 9 * 60, workEnd: 18 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 7 * 60, sleep: 23 * 60 }
+        };
+        state.people.push(np); saveState(); render(); openPerson(np.id);
+      };
+      $("#setExport").onclick = () => {
+        const txt = JSON.stringify(state);
+        const ta = document.createElement("textarea");
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); toast("备份已复制，粘贴到微信收藏或备忘录里存着"); }
+        catch (e) { toast("复制失败，请手动长按选择"); }
+        ta.remove();
+        openSheet("备份文本", '<div class="note">长按下面文本全选复制，存到微信收藏 / 备忘录。换手机时用它恢复。</div><div style="height:10px"></div><textarea style="width:100%;height:220px;border:1px solid #e2e5ea;border-radius:12px;padding:10px;font-size:12px">' + esc(txt) + '</textarea>');
+      };
+      $("#setImport").onclick = () => {
+        openSheet("恢复备份", '<div class="note">把之前备份的文本粘贴进来，点恢复。会覆盖当前数据。</div><div style="height:10px"></div><textarea id="impTa" style="width:100%;height:220px;border:1px solid #e2e5ea;border-radius:12px;padding:10px;font-size:12px" placeholder="粘贴备份文本"></textarea><div style="height:12px"></div><button class="btn" id="impGo">恢复</button>', () => {
+          $("#impGo").onclick = () => {
+            try {
+              const o = JSON.parse($("#impTa").value);
+              if (!o || !Array.isArray(o.events)) throw new Error("格式不对");
+              state = Object.assign(defaultState(), o);
+              saveState(); render(); closeSheet(); toast("已恢复 " + state.events.length + " 条日程");
+            } catch (err) { toast("这段文本读不出来，确认是完整复制过来的"); }
+          };
+        });
+      };
+      $("#setClear").onclick = () => {
+        if (confirm("确定清空所有日程吗？这一步不能撤销。")) {
+          state.events = []; state.shop = []; saveState(); render(); closeSheet(); toast("已清空");
+        }
+      };
+    });
+}
+
+/* ---------- 修改某个人的作息（固定班 / 轮班） ---------- */
+function rotatePreviewHtml(cycle, anchor, ds, de, ns, ne) {
+  const cyc = (cycle || "白夜休").split("").map((ch) => SHIFT_CHAR[ch] || "off");
+  const a = fromKey(anchor || dk(new Date()));
+  const rows = [];
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(new Date(), i);
+    const diff = Math.round((fromKey(dk(d)).getTime() - a.getTime()) / 86400000);
+    const t = cyc[((diff % cyc.length) + cyc.length) % cyc.length];
+    const txt = t === "day" ? "白班 " + ds + "–" + de : t === "night" ? "夜班 " + ns + "–次晨 " + ne : "休息";
+    const head = i === 0 ? "今天" : i === 1 ? "明天" : i === 2 ? "后天" : (d.getMonth() + 1) + "/" + d.getDate();
+    rows.push(head + " " + WEEK[d.getDay()] + " · " + txt);
+  }
+  return rows.join("<br>");
+}
+function openPerson(id) {
+  const p = state.people.find((x) => x.id === id);
+  if (!p) return;
+  const isRot = p.mode === "rotate";
+  const f = Object.assign({ workStart: 9 * 60, workEnd: 18 * 60, lunchStart: 12 * 60, lunchEnd: 13 * 60, wake: 7 * 60, sleep: 23 * 60 }, p.fixed || {});
+  const r = Object.assign({ cycle: "白夜休", anchor: dk(new Date()), dayStart: 8 * 60, dayEnd: 18 * 60, nightStart: 18 * 60, nightEnd: 8 * 60 }, p.rotate || {});
+  const fld = (title, fid, val) => '<div><label>' + title + '</label><input type="time" id="' + fid + '" value="' + val + '"></div>';
+  openSheet("修改作息 · " + esc(p.name),
+    '<div class="frow"><label>称呼</label><input id="pName" value="' + esc(p.name) + '" placeholder="例如：爸爸"></div>' +
+    '<div class="frow"><label>哪种作息</label><select id="pMode">' +
+      '<option value="fixed"' + (isRot ? "" : " selected") + '>固定班（每天都一样）</option>' +
+      '<option value="rotate"' + (isRot ? " selected" : "") + '>轮班（白班 / 夜班 / 休息轮着来）</option>' +
+    '</select></div>' +
+    '<div id="fixBlock"' + (isRot ? ' class="hidden"' : "") + '>' +
+      '<div class="frow two">' + fld("上班", "pWs", toHM(f.workStart)) + fld("下班", "pWe", toHM(f.workEnd)) + '</div>' +
+      '<div class="frow two">' + fld("午休开始", "pLs", toHM(f.lunchStart)) + fld("午休结束", "pLe", toHM(f.lunchEnd)) + '</div>' +
+      '<div class="frow two">' + fld("起床", "pWake", toHM(f.wake)) + fld("睡觉", "pSleep", toHM(f.sleep)) + '</div>' +
+    '</div>' +
+    '<div id="rotBlock"' + (isRot ? "" : ' class="hidden"') + '>' +
+      '<div class="frow"><label>轮班规律（一天一个字：白＝白班，夜＝夜班，休＝休息）</label>' +
+        '<input id="pCycle" value="' + esc(r.cycle) + '" placeholder="白夜休">' +
+        '<div class="presets"><button class="mini" data-cyc="白夜休">白夜休</button>' +
+        '<button class="mini" data-cyc="白休夜休">白休夜休</button>' +
+        '<button class="mini" data-cyc="白白夜休休">白白夜休休</button></div></div>' +
+      '<div class="frow two">' + fld("白班开始", "pDs", toHM(r.dayStart)) + fld("白班结束", "pDe", toHM(r.dayEnd)) + '</div>' +
+      '<div class="frow two">' + fld("夜班开始", "pNs", toHM(r.nightStart)) + fld("夜班结束（次日早上）", "pNe", toHM(r.nightEnd)) + '</div>' +
+      '<div class="frow"><label>哪一天是白班（用来对准轮次，选错会整天错开）</label>' +
+        '<input type="date" id="pAnchor" value="' + r.anchor + '">' +
+        '<div class="presets"><button class="mini" data-anch="0">今天是白班</button>' +
+        '<button class="mini" data-anch="-1">昨天是白班</button>' +
+        '<button class="mini" data-anch="1">明天是白班</button></div></div>' +
+      '<div class="note"><b>接下来七天，对着日历核一下：</b><br><span id="rotPreview"></span></div>' +
+    '</div>' +
+    '<div style="height:12px"></div>' +
+    '<button class="btn" id="pSave">保存</button>' +
+    (state.people.length > 1 ? '<button class="btn danger" id="pDel">删掉这个人</button>' : ''),
+    () => {
+      const readHM = (fid, dflt) => {
+        const el = $("#" + fid);
+        if (!el || !el.value || el.value.indexOf(":") < 0) return dflt;
+        const a = el.value.split(":");
+        return (+a[0]) * 60 + (+a[1]);
+      };
+      const refresh = () => {
+        const el = $("#rotPreview");
+        if (!el) return;
+        el.innerHTML = rotatePreviewHtml($("#pCycle").value, $("#pAnchor").value,
+          $("#pDs").value || "08:00", $("#pDe").value || "18:00", $("#pNs").value || "18:00", $("#pNe").value || "08:00");
+      };
+      $("#pMode").onchange = () => {
+        const m = $("#pMode").value;
+        $("#fixBlock").classList.toggle("hidden", m !== "fixed");
+        $("#rotBlock").classList.toggle("hidden", m !== "rotate");
+        refresh();
+      };
+      ["pCycle", "pAnchor", "pDs", "pDe", "pNs", "pNe"].forEach((fid) => {
+        const el = $("#" + fid);
+        if (el) { el.oninput = refresh; el.onchange = refresh; }
+      });
+      $("#sheetBody").querySelectorAll("[data-cyc]").forEach((b) => {
+        b.onclick = () => { $("#pCycle").value = b.dataset.cyc; refresh(); };
+      });
+      $("#sheetBody").querySelectorAll("[data-anch]").forEach((b) => {
+        b.onclick = () => { $("#pAnchor").value = dk(addDays(new Date(), +b.dataset.anch)); refresh(); };
+      });
+      refresh();
+      $("#pSave").onclick = () => {
+        p.name = $("#pName").value.trim() || p.name;
+        p.mode = $("#pMode").value;
+        if (p.mode === "fixed") {
+          p.fixed = {
+            workStart: readHM("pWs", f.workStart), workEnd: readHM("pWe", f.workEnd),
+            lunchStart: readHM("pLs", f.lunchStart), lunchEnd: readHM("pLe", f.lunchEnd),
+            wake: readHM("pWake", f.wake), sleep: readHM("pSleep", f.sleep)
+          };
+          delete p.rotate;
+        } else {
+          let cyc = ($("#pCycle").value || "").split("").filter((ch) => "白夜休".indexOf(ch) >= 0).join("");
+          if (!cyc) cyc = "白夜休";
+          p.rotate = {
+            cycle: cyc, anchor: $("#pAnchor").value || dk(new Date()),
+            dayStart: readHM("pDs", r.dayStart), dayEnd: readHM("pDe", r.dayEnd),
+            nightStart: readHM("pNs", r.nightStart), nightEnd: readHM("pNe", r.nightEnd)
+          };
+          delete p.fixed;
+        }
+        saveState(); render(); closeSheet();
+        const s = personOn(p, viewKey);
+        toast(p.name + "：" + dayShort(viewKey) + "是" + s.label + (s.text ? " " + s.text : ""));
+      };
+      if ($("#pDel")) $("#pDel").onclick = () => {
+        if (confirm("删掉「" + p.name + "」？TA 名下的日程会保留，只是不再归属到人。")) {
+          state.people = state.people.filter((x) => x.id !== p.id);
+          if (state.currentPerson === p.id) state.currentPerson = state.people[0].id;
+          saveState(); render(); openSettings();
+        }
+      };
+    });
+}
+
+/* ---------- 编辑/新建单条 ---------- */
+function openEdit(id, preset) {
+  const isNew = !id;
+  const e = isNew ? Object.assign({ id: uid(), date: viewKey, start: 9 * 60, dur: 30, title: "", note: "", cat: "其他", done: false, repeat: "none" }, preset || {})
+                   : state.events.find((x) => x.id === id);
+  if (!e) return;
+  const repSel = [["none", "不重复"], ["daily", "每天"], ["weekday", "工作日（周一到周五）"],
+    ["weekend", "周末（周六日）"], ["weekly", "每周"], ["monthly", "每月"]]
+    .map((p) => '<option value="' + p[0] + '"' + ((e.repeat || "none") === p[0] ? " selected" : "") + '>' + p[1] + '</option>').join("");
+  const repNote = (!isNew && e.repeat && e.repeat !== "none")
+    ? '<div class="note warn">这是' + repeatName(e.repeat) + '的重复安排，改这里会影响以后的每一次。</div><div style="height:10px"></div>' : "";
+  openSheet(isNew ? "新建安排" : "修改安排",
+    repNote +
+    '<div class="frow"><label>要做什么</label><input id="eTitle" value="' + esc(e.title) + '" placeholder="例如：买菜"></div>' +
+    '<div class="frow two"><div><label>日期</label><input type="date" id="eDate" value="' + e.date + '"></div><div><label>开始</label><input type="time" id="eStart" value="' + toHM(e.start) + '"></div></div>' +
+    '<div class="frow two"><div><label>时长（分钟）</label><input type="number" id="eDur" min="5" step="5" value="' + e.dur + '"></div>' +
+    '<div><label>分类</label><select id="eCat">' + CATS.concat([DEFAULT_CAT]).map((c) => '<option value="' + c.key + '"' + (c.key === e.cat ? " selected" : "") + '>' + c.emoji + " " + c.key + '</option>').join("") + '</select></div></div>' +
+    '<div class="frow two"><div><label>归谁</label><select id="eWho">' + state.people.map((p) => '<option value="' + p.id + '"' + (p.id === (e.who || state.currentPerson) ? " selected" : "") + '>' + esc(p.name) + '</option>').join("") + '</select></div>' +
+    '<div><label>重复</label><select id="eRepeat">' + repSel + '</select></div></div>' +
+    '<div class="frow"><label>备注（买菜清单、菜名都能写这）</label><textarea id="eNote" placeholder="例如：青椒、土豆、鸡蛋">' + esc(e.note) + '</textarea></div>' +
+    '<button class="btn" id="eSave">保存</button>' +
+    (isNew ? "" : '<button class="btn danger" id="eDel">删除这条</button>'),
+    () => {
+      $("#eSave").onclick = () => {
+        const h = $("#eStart").value.split(":");
+        e.title = $("#eTitle").value.trim() || "待办";
+        e.date = $("#eDate").value || viewKey;
+        e.start = (+h[0]) * 60 + (+h[1]);
+        e.dur = clamp(parseInt($("#eDur").value, 10) || 30, 5, 600);
+        e.cat = $("#eCat").value;
+        e.note = $("#eNote").value.trim();
+        if ($("#eWho")) e.who = $("#eWho").value;
+        const rp = $("#eRepeat").value;
+        if (rp === "none") { delete e.repeat; delete e.repeatUntil; e.skip = []; e.doneDates = []; }
+        else { e.repeat = rp; e.repeatUntil = dk(addDays(fromKey(e.date), 120)); e.skip = e.skip || []; e.doneDates = e.doneDates || []; }
+        if (isNew) state.events.push(e);
+        viewKey = e.date;
+        saveState(); render(); closeSheet();
+        const hl = halalCheck(e.title + " " + e.note);
+        if (hl.length) { const h2 = hl[0]; toast((h2.level === "block" ? "⚠️ " : "ℹ️ ") + h2.why + "，" + h2.fix); }
+      };
+      if (!isNew) $("#eDel").onclick = () => {
+        if (e.repeat && e.repeat !== "none") { askDeleteRepeat(e, e.date); return; }
+        state.events = state.events.filter((x) => x.id !== e.id);
+        saveState(); render(); closeSheet(); toast("已删除");
+      };
+    });
+}
+
+/* 重复日程删一条还是删一串，问清楚再动手 */
+function askDeleteRepeat(e, occ) {
+  openSheet("这是重复日程",
+    '<div class="note">「' + esc(e.title) + '」是' + repeatName(e.repeat) + '的重复安排，你想怎么处理？</div><div style="height:14px"></div>' +
+    '<button class="btn ghost" id="repSkip">只跳过 ' + dayShort(occ) + ' 这一次</button>' +
+    '<button class="btn danger" id="repAll">删掉整个重复安排</button>',
+    () => {
+      $("#repSkip").onclick = () => {
+        e.skip = e.skip || [];
+        if (e.skip.indexOf(occ) < 0) e.skip.push(occ);
+        saveState(); render(); closeSheet(); toast(dayShort(occ) + "这次跳过了，以后照旧");
+      };
+      $("#repAll").onclick = () => {
+        state.events = state.events.filter((x) => x.id !== e.id);
+        saveState(); render(); closeSheet(); toast("整个重复安排已删除");
+      };
+    });
+}
+
+/* ---------- 今天吃什么 ---------- */
+function pool(kinds, recent) {
+  const all = [];
+  DISHES.forEach((d, i) => { if (kinds.indexOf(d[4]) >= 0) all.push(i); });
+  const fresh = all.filter((i) => recent.indexOf(i) < 0);
+  return fresh.length >= 3 ? fresh : all;
+}
+function dishCard(i, role) {
+  const d = DISHES[i];
+  return '<div class="dish" data-i="' + i + '">' +
+    '<div class="dh"><span class="dn">' + esc(d[0]) + '</span><span class="dk">' + role + '</span></div>' +
+    '<div class="dt"><span class="tag">⏱ ' + d[2] + ' 分钟</span><span class="tag">' + "★".repeat(d[3]) + "☆".repeat(3 - d[3]) + '</span>' + d[1].split(" ").map((t) => '<span class="tag">' + esc(t) + '</span>').join("") + '</div>' +
+    '<div class="di">🧺 ' + esc(d[5].split(" ").join(" · ")) + '</div>' +
+    '<div class="ds">' + esc(d[6]) + '</div>' +
+    '<div class="dops"><button class="p" data-d="plan">安排做这道</button><button data-d="shop">食材进清单</button><button data-d="reroll">换一道</button></div>' +
+    '</div>';
+}
+let eatSet = null;
+let eatForm = null;   // null = 一荤一素一汤的搭配模式；选了就是"换个花样"按做法挑
+const EAT_FORMS = ["一锅出", "烤箱菜", "蒸/白灼", "凉拌/现成", "炖菜", "汤", "面点主食", "家常炒"];
+/* 看出这道菜是"怎么做的"，用来解决"又想不出吃什么" */
+function formOf(i) {
+  const d = DISHES[i], s = d[0] + " " + d[6];
+  if (/焖饭|焖面|一锅出|饭包|乱炖|火锅/.test(s)) return "一锅出";
+  if (/烤箱|烤/.test(s)) return "烤箱菜";
+  if (/蒸|白灼/.test(s)) return "蒸/白灼";
+  if (/凉拌|不用开火|手撕鸡|老虎菜|蘸酱/.test(s)) return "凉拌/现成";
+  if (d[4] === "汤") return "汤";
+  if (d[4] === "主食") return "面点主食";
+  if (/炖|煲|砂锅/.test(s)) return "炖菜";
+  return "家常炒";
+}
+function dishesOfForm(f) {
+  const out = [];
+  DISHES.forEach((d, i) => { if (formOf(i) === f) out.push(i); });
+  return out;
+}
+function newEatSet() {
+  const recent = state.seenDishes || [];
+  if (eatForm) {
+    const all = dishesOfForm(eatForm);
+    const fresh = all.filter((i) => recent.indexOf(i) < 0);
+    const src = fresh.length >= 3 ? fresh : all;
+    const picked = [];
+    for (let k = 0; k < 3 && picked.length < src.length; k++) {
+      let idx, guard = 0;
+      do { idx = src[Math.floor(Math.random() * src.length)]; guard++; } while (picked.indexOf(idx) >= 0 && guard < 60);
+      if (picked.indexOf(idx) < 0) picked.push(idx);
+    }
+    return picked;
+  }
+  const pick = (kinds) => { const a = pool(kinds, recent); return a[Math.floor(Math.random() * a.length)]; };
+  return [pick(["荤", "海鲜"]), pick(["素"]), pick(["汤", "主食"])];
+}
+function rerollCandidates(old) {
+  if (eatForm) {
+    const all = dishesOfForm(eatForm).filter((x) => x !== old);
+    const fresh = all.filter((x) => (state.seenDishes || []).indexOf(x) < 0);
+    return fresh.length ? fresh : all;
+  }
+  return pool(kindPoolOf(old), (state.seenDishes || []).concat([old])).filter((x) => x !== old);
+}
+function kindPoolOf(i) {
+  const k = DISHES[i][4];
+  return k === "素" ? ["素"] : (k === "荤" || k === "海鲜") ? ["荤", "海鲜"] : ["汤", "主食"];
+}
+function roleOf(i) {
+  const k = DISHES[i][4];
+  if (eatForm) return k;
+  return k === "素" ? "素菜" : (k === "汤" || k === "主食") ? "汤/主食" : "主菜";
+}
+function openEat() {
+  if (!eatSet) eatSet = newEatSet();
+  const formChips = '<div class="chips formchips">' +
+    '<button class="chip' + (eatForm ? "" : " hi") + '" data-form="">🍱 三菜搭配</button>' +
+    EAT_FORMS.map((f) => '<button class="chip' + (eatForm === f ? " hi" : "") + '" data-form="' + f + '">' + f + '</button>').join("") +
+    '</div>';
+  const html =
+    formChips +
+    '<div class="sethead">' + (eatForm
+      ? '换个花样吃：<b>' + esc(eatForm) + '</b> · 挑了三道 · 全部不含猪肉、猪油、料酒'
+      : '给你配好一套：一荤 + 一素 + 一汤/主食 · 全部不含猪肉、猪油、料酒') + '</div>' +
+    eatSet.map((i) => dishCard(i, roleOf(i))).join("") +
+    '<button class="btn" id="eatReroll">🔄 换一批</button>' +
+    '<div style="height:10px"></div>' +
+    '<button class="btn ghost" id="eatAllShop">把这几个的食材都加进买菜清单</button>' +
+    '<div style="height:14px"></div>' +
+    '<div class="note">「火锅、烤肉吃腻了」的时候点上面那排：换的是一类做法，不只是换菜名。<br>肉类记得按家里的习惯选清真认证的；香肠、肉丸、火锅底料这类加工品，买前看一眼清真标识。</div>';
+  openSheet("今天吃什么（清真家常）", html, () => {
+    $("#sheetBody").querySelectorAll("[data-form]").forEach((b) => {
+      b.onclick = () => { eatForm = b.dataset.form || null; eatSet = newEatSet(); openEat(); };
+    });
+    const cards = $("#sheetBody").querySelectorAll(".dish");
+    for (let n = 0; n < cards.length; n++) {
+      const el = cards[n], slot = n;
+      el.querySelectorAll("button").forEach((b) => {
+        b.onclick = () => {
+          const act = b.dataset.d;
+          if (act === "plan") planDish(eatSet[slot]);
+          else if (act === "shop") { addShop(DISHES[eatSet[slot]][5].split(" ")); toast("食材已进买菜清单"); }
+          else if (act === "reroll") {
+            const cand = rerollCandidates(eatSet[slot]);
+            if (cand.length) eatSet[slot] = cand[Math.floor(Math.random() * cand.length)];
+            openEat();
+          }
+        };
+      });
+    }
+    $("#eatReroll").onclick = () => {
+      state.seenDishes = (state.seenDishes || []).concat(eatSet).slice(-40);
+      saveState(); eatSet = newEatSet(); openEat();
+    };
+    $("#eatAllShop").onclick = () => { eatSet.forEach((i) => addShop(DISHES[i][5].split(" "))); toast("食材都进清单了"); };
+  });
+}
+function planDish(i) {
+  const d = DISHES[i];
+  const s = personOn(currentPerson(), dk(new Date()));
+  const we = s.workEnd == null ? 16 * 60 : s.workEnd;
+  const when = clamp(Math.max(17 * 60 + 30, we + 60), 0, 22 * 60);
+  const key = dk(new Date());
+  const slot = findFreeSlot(key, when, 60, null);
+  state.events.push({
+    id: uid(), date: key, start: slot.start, dur: 60, title: "做饭：" + d[0],
+    note: "食材：" + d[5].split(" ").join("、") + "\n" + d[6], cat: "做饭", done: false, created: Date.now(),
+    who: state.currentPerson
+  });
+  saveState(); render(); closeSheet();
+  toast("已排到 " + toHM(slot.start) + " 做饭：" + d[0] + (slot.moved ? "（避开了「" + slot.blocker.title + "」）" : ""));
+}
+
+/* ---------- 买菜清单 ---------- */
+function addShop(items) {
+  state.shop = state.shop || [];
+  items.forEach((t) => {
+    const name = String(t).trim();
+    if (!name) return;
+    const ex = state.shop.find((s) => s.text === name);
+    if (ex) { ex.done = false; return; }
+    state.shop.push({ id: uid(), text: name, done: false });
+  });
+  saveState(); renderShopBadge();
+}
+function openShop() {
+  const list = state.shop || [];
+  const body = list.length
+    ? list.map((s) => '<div class="shopitem"><input type="checkbox" data-id="' + s.id + '"' + (s.done ? " checked" : "") + '><span class="' + (s.done ? "done" : "") + '">' + esc(s.text) + '</span><button class="del" data-del="' + s.id + '">✕</button></div>').join("")
+    : '<div class="empty">清单是空的。<br>在「今天吃什么」里点「食材进清单」，或者下面手动加。</div>';
+  openSheet("买菜清单",
+    '<div class="note">买完打个勾，下次做菜前先看一眼冰箱和这张清单，能少买重复的。</div><div style="height:10px"></div>' +
+    '<div class="inputrow"><input id="shopIn" placeholder="加一样，例如：青椒"><button class="sendbtn" id="shopAdd">加入</button></div>' +
+    '<div style="height:10px"></div>' + body +
+    (list.length ? '<div style="height:14px"></div><button class="btn ghost" id="shopClean">清掉已买的</button>' : ""),
+    () => {
+      const add = () => { const v = $("#shopIn").value.trim(); if (!v) return; addShop(v.split(/[,，、\s]+/)); openShop(); };
+      $("#shopAdd").onclick = add;
+      $("#shopIn").onkeydown = (ev) => { if (ev.key === "Enter") add(); };
+      $("#sheetBody").querySelectorAll("input[type=checkbox]").forEach((cb) => {
+        cb.onchange = () => { const it = state.shop.find((s) => s.id === cb.dataset.id); if (it) { it.done = cb.checked; saveState(); renderShopBadge(); openShop(); } };
+      });
+      $("#sheetBody").querySelectorAll(".del").forEach((b) => {
+        b.onclick = () => { state.shop = state.shop.filter((s) => s.id !== b.dataset.del); saveState(); renderShopBadge(); openShop(); };
+      });
+      const cl = $("#shopClean"); if (cl) cl.onclick = () => { state.shop = state.shop.filter((s) => !s.done); saveState(); renderShopBadge(); openShop(); };
+    });
+}
+
+/* ---------- 常用 ---------- */
+function openQuick() {
+  openSheet("常用安排（点一下就排好）",
+    '<div class="note">⏰ <b>固定提醒</b>：选一种，填个「做什么」和几点，以后长期生效，不用每天重记。' +
+    '工作日提醒只落在周一到周五，周末提醒只落在周六日，每天提醒天天都有。</div>' +
+    '<div style="height:10px"></div>' +
+    '<div class="rows">' +
+      '<button class="qk" data-rep="weekday">💼 工作日提醒</button>' +
+      '<button class="qk" data-rep="weekend">🏖️ 周末提醒</button>' +
+      '<button class="qk" data-rep="daily">🔁 每天提醒</button>' +
+    '</div>' +
+    '<div style="height:16px"></div>' +
+    '<div class="note">常用安排（按你设的作息自动放时间）</div><div style="height:10px"></div>' +
+    '<div class="rows">' + QUICK.map((q, i) => '<button class="qk" data-q="' + i + '">' + esc(q.t) + '</button>').join("") + '</div>' +
+    '<div style="height:16px"></div><div class="note">也可以直接在下面输入栏说一句，比如「工作日早上8点提醒我吃药」「周末上午去买菜」「每周三晚上7点倒垃圾」。</div>',
+    () => {
+      $("#sheetBody").querySelectorAll(".qk").forEach((b) => {
+        b.onclick = () => {
+          if (b.dataset.rep) {
+            const rep = b.dataset.rep;
+            closeSheet();
+            openEdit(null, { repeat: rep, start: rep === "weekend" ? 10 * 60 : 8 * 60, dur: 30, cat: "其他" });
+            toast("填个「做什么」和几点就行，以后" + repeatName(rep) + "都会提醒");
+            return;
+          }
+          const s = QUICK[+b.dataset.q].s;
+          closeSheet(); applyParsed(parseInput(s));
+        };
+      });
+    });
+}
+
+/* ---------- 语音 ---------- */
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = $("#btnMic");
+  if (!SR) { toast("这个浏览器不支持网页语音，直接用手机输入法键盘上的 🎤 说话也一样"); return; }
+  if (!window.isSecureContext) { toast("语音输入需要 https 或本机地址，可以改用输入法的麦克风"); return; }
+  let r;
+  try { r = new SR(); } catch (e) { toast("语音启动失败，改用键盘上的麦克风吧"); return; }
+  r.lang = "zh-CN"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+  let got = false;
+  r.onstart = () => btn.classList.add("rec");
+  r.onresult = (ev) => {
+    let txt = "";
+    for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+    $("#nlInput").value = txt;
+    liveHint();
+    if (ev.results[ev.results.length - 1].isFinal && !got) { got = true; setTimeout(() => { if ($("#nlInput").value.trim()) applyParsed(parseInput($("#nlInput").value), true); }, 250); }
+  };
+  r.onerror = (ev) => {
+    btn.classList.remove("rec");
+    toast(ev.error === "not-allowed" ? "没有麦克风权限，用输入法键盘上的 🎤 也可以" : "语音没听清，再说一次或直接打字");
+  };
+  r.onend = () => btn.classList.remove("rec");
+  try { r.start(); toast("请说话…"); } catch (e) { toast("语音启动失败"); }
+}
+
+/* ---------- 输入栏实时预览 ---------- */
+let hintTimer = null;
+function liveHint() {
+  const v = $("#nlInput").value.trim();
+  const box = $("#parseHint");
+  if (!v) { box.textContent = "提示：不用写时间，「下班后」「明天早上」它自己会算"; box.classList.remove("warn"); return; }
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => {
+    const r = parseInput(v);
+    const it = r.items[0];
+    const repTxt = (it.repeat && it.repeat !== "none") ? "🔁" + repeatName(it.repeat) + " " : "";
+    let s = "→ " + repTxt + dayShort(it.dateKey) + " " + toHM(it.startMin) + "–" + toHM(it.startMin + it.dur) + " " + it.title +
+            "（" + catOf(it.cat.key).emoji + it.cat.key + " · " + it.why + "）";
+    if (r.halal.some((h) => h.level === "block")) { s = "⚠️ " + r.halal.find((h) => h.level === "block").why + "，" + r.halal.find((h) => h.level === "block").fix; box.classList.add("warn"); }
+    else if (r.halal.length) { s += " · ℹ️ " + r.halal[0].why; box.classList.add("warn"); }
+    else box.classList.remove("warn");
+    if (r.items.length > 1) s = "共 " + r.items.length + " 条：" + s;
+    box.textContent = s;
+  }, 220);
+}
+
+/* ============================== 事件绑定 ============================== */
+function bind() {
+  $("#tipCard").onclick = () => {
+    const el = $("#tipCard");
+    $("#tipText").textContent = nextTip(true);
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  };
+  $("#dayPrev").onclick = () => { viewKey = dk(addDays(fromKey(viewKey), -1)); render(); };
+  $("#dayNext").onclick = () => { viewKey = dk(addDays(fromKey(viewKey), 1)); render(); };
+  // 点名字切换"这是谁的日程"：换人之后，「下班后」按那个人的班算
+  $("#peopleStrip").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-p]");
+    if (!b) return;
+    state.currentPerson = b.dataset.p;
+    saveState(); render(); liveHint();
+    const cp = currentPerson(), s = personOn(cp, viewKey);
+    toast("现在按「" + cp.name + "」的作息来排：" + dayShort(viewKey) + s.label + (s.text ? " " + s.text : ""));
+  });
+  $("#btnSettings").onclick = openSettings;
+  $("#chipEat").onclick = openEat;
+  $("#chipShop").onclick = openShop;
+  $("#chipQuick").onclick = openQuick;
+  $("#sheetClose").onclick = closeSheet;
+  $("#mask").onclick = closeSheet;
+
+  $("#btnSend").onclick = () => {
+    const v = $("#nlInput").value.trim();
+    if (!v) { toast("先说一句要安排什么吧"); $("#nlInput").focus(); return; }
+    applyParsed(parseInput(v), true);
+    liveHint();
+  };
+  $("#nlInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btnSend").click(); });
+  $("#nlInput").addEventListener("input", liveHint);
+  $("#btnMic").onclick = startVoice;
+
+  function toggleDone(e, occ) {
+    if (e.repeat && e.repeat !== "none") {
+      e.doneDates = e.doneDates || [];
+      const at = e.doneDates.indexOf(occ);
+      if (at >= 0) e.doneDates.splice(at, 1); else e.doneDates.push(occ);
+      saveState(); render(); toast(at >= 0 ? "已恢复" : "完成啦 👍");
+    } else {
+      e.done = !e.done; saveState(); render(); toast(e.done ? "完成啦 👍" : "已恢复");
+    }
+  }
+  // 今日列表上的操作
+  $("#todayList").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[data-act]");
+    if (!b) return;
+    const e = state.events.find((x) => x.id === b.dataset.id);
+    if (!e) return;
+    const occ = b.dataset.occ || e.date;
+    if (b.dataset.act === "done") toggleDone(e, occ);
+    else if (b.dataset.act === "edit") openEdit(e.id);
+    else if (b.dataset.act === "del") {
+      if (e.repeat && e.repeat !== "none") askDeleteRepeat(e, occ);
+      else { state.events = state.events.filter((x) => x.id !== e.id); saveState(); render(); toast("已删除"); }
+    }
+  });
+  // 横轴：点编号或色段 = 改那一条；点轴上的空白 = 在那个时间新建（按半小时取整）
+  $("#tl").addEventListener("click", (ev) => {
+    const seg = ev.target.closest("[data-id]");
+    if (seg) { openEdit(seg.dataset.id); return; }
+    const tr = ev.target.closest(".htrack");
+    if (!tr) return;
+    const r = tr.getBoundingClientRect();
+    if (!r.width) return;
+    const f = clamp((ev.clientX - r.left) / r.width, 0, 1);
+    const from = parseInt(tr.dataset.from || "0", 10);
+    const m = Math.round((from + f * 720) / 30) * 30;   // 一条轴只画 12 小时，所以每像素更精确
+    openEdit(null, { start: clamp(m, 0, 23 * 60 + 30) });
+  });
+}
+
+/* ============================== 启动 ============================== */
+function injectManifest() {
+  try {
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='38' fill='#0f766e'/><rect x='40' y='52' width='112' height='100' rx='14' fill='#fff'/><rect x='40' y='52' width='112' height='26' rx='13' fill='#f59e0b'/><rect x='64' y='36' width='10' height='30' rx='5' fill='#0f766e'/><rect x='118' y='36' width='10' height='30' rx='5' fill='#0f766e'/><rect x='60' y='98' width='26' height='24' rx='6' fill='#0f766e'/><rect x='106' y='98' width='26' height='24' rx='6' fill='#99e0d8'/></svg>";
+    const icon = "data:image/svg+xml," + encodeURIComponent(svg);
+    const mf = { name: "家里的日程", short_name: "家里日程", display: "standalone", start_url: location.href.split("#")[0], background_color: "#f5f6f8", theme_color: "#0f766e", icons: [{ src: icon, sizes: "192x192", type: "image/svg+xml", purpose: "any" }] };
+    const l = document.createElement("link");
+    l.rel = "manifest";
+    l.href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(mf));
+    document.head.appendChild(l);
+    const ai = document.createElement("link");
+    ai.rel = "apple-touch-icon"; ai.href = icon; document.head.appendChild(ai);
+  } catch (e) { /* 不支持就忽略 */ }
+}
+
+/* 第一次打开时讲清楚：这是你自己的本子，别人看不到 */
+function showPrivacy() {
+  openSheet("这是你自己的日程本",
+    '<div class="note">📵 <b>只有这台手机能看到你写的东西。</b><br><br>' +
+    '· 日程全部存在这台手机的浏览器里，App 本身不联网、不上传，也没有任何服务器收<br>' +
+    '· 家里人在自己手机上打开同一个网址，看到的是他们自己的空白本子，互相看不见<br>' +
+    '· 每台手机有自己的本机编号，你的是 <b>' + deviceTag() + '</b>，可以用它确认</div>' +
+    '<div style="height:12px"></div>' +
+    '<button class="btn" id="pvOk">知道了</button>' +
+    '<div style="height:12px"></div>' +
+    '<div class="note warn">唯一要留意的是「导出备份」：那段文字里有你全部日程，别发到群里或转给家人。</div>',
+    () => { $("#pvOk").onclick = closeSheet; });
+}
+
+function init() {
+  loadState();
+  injectManifest();
+  bind();
+  $("#tipText").textContent = nextTip(false);
+  liveHint();
+  render();
+  // 只有通过网址（http/https）打开时才注册离线缓存；单独一个文件打开就自动跳过
+  try {
+    if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    }
+  } catch (e) { /* 忽略 */ }
+  if (state.firstRun) { state.firstRun = false; saveState(); setTimeout(showPrivacy, 500); }
+  if (!canStore) setTimeout(() => toast("注意：当前打开方式存不了数据，建议用网址打开（见设置里的说明）"), 1500);
+  setInterval(() => { if (viewKey === dk(new Date())) renderTimeline(); }, 60000);
+}
+init();
+
+</script>
+</body>
+</html>
