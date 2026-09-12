@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="家里日程" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="icon-192.png" />
 <style>
 :root{
   --bg:#f5f6f8; --card:#ffffff; --ink:#1f2937; --sub:#6b7280; --line:#e8eaee;
@@ -1365,6 +1369,7 @@ function openSettings() {
   openSheet("家人作息（AI 按这个安排）",
     '<div class="note">两种模式：<b>固定班</b>只要填上下班时间；<b>轮班</b>写一串规律，一天一个字 ——' +
     '「白夜休」就是上一天白班、再上一天夜班、再歇一天，一直循环。上面那排名字里选中的是谁，下面输入栏说的「下班后」就是谁。</div>' +
+    (isStandalone() ? "" : '<button class="btn" id="installBtn">📲 安装到手机桌面</button>') +
     '<div style="height:12px"></div>' + roster +
     '<button class="btn ghost" id="addPerson">＋ 添加家人</button>' +
     '<div style="height:16px"></div>' +
@@ -1384,6 +1389,7 @@ function openSettings() {
     '<button class="btn danger" id="setClear">清空全部日程</button>' +
     (canStore ? "" : '<div style="height:10px"></div><div class="note warn">当前打开方式不支持本地保存（常见于手机直接打开本地 .html 文件）。建议用电脑起个小服务、手机用网址打开，数据才能长期保留。</div>'),
     () => {
+      if ($("#installBtn")) $("#installBtn").onclick = promptInstall;
       $("#setSave").onclick = () => { p.avoid = $("#setAvoid").value.trim(); saveState(); toast("忌口已保存"); };
       $("#sheetBody").querySelectorAll("[data-edit]").forEach((b) => { b.onclick = () => openPerson(b.dataset.edit); });
       $("#addPerson").onclick = () => {
@@ -1931,18 +1937,35 @@ function bind() {
 }
 
 /* ============================== 启动 ============================== */
-function injectManifest() {
-  try {
-    const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='38' fill='#0f766e'/><rect x='40' y='52' width='112' height='100' rx='14' fill='#fff'/><rect x='40' y='52' width='112' height='26' rx='13' fill='#f59e0b'/><rect x='64' y='36' width='10' height='30' rx='5' fill='#0f766e'/><rect x='118' y='36' width='10' height='30' rx='5' fill='#0f766e'/><rect x='60' y='98' width='26' height='24' rx='6' fill='#0f766e'/><rect x='106' y='98' width='26' height='24' rx='6' fill='#99e0d8'/></svg>";
-    const icon = "data:image/svg+xml," + encodeURIComponent(svg);
-    const mf = { name: "家里的日程", short_name: "家里日程", display: "standalone", start_url: location.href.split("#")[0], background_color: "#f5f6f8", theme_color: "#0f766e", icons: [{ src: icon, sizes: "192x192", type: "image/svg+xml", purpose: "any" }] };
-    const l = document.createElement("link");
-    l.rel = "manifest";
-    l.href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(mf));
-    document.head.appendChild(l);
-    const ai = document.createElement("link");
-    ai.rel = "apple-touch-icon"; ai.href = icon; document.head.appendChild(ai);
-  } catch (e) { /* 不支持就忽略 */ }
+/* 安装提示：Chrome 支持安装时会给出 beforeinstallprompt，我们先收着，
+   等用户在设置里点「安装到手机」时再触发系统安装弹窗 */
+let installEvent = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvent = e; });
+window.addEventListener("appinstalled", () => { installEvent = null; toast("已装到手机上，以后从桌面图标打开"); });
+function isStandalone() {
+  return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+         navigator.standalone === true;
+}
+function promptInstall() {
+  if (installEvent) {
+    installEvent.prompt();
+    installEvent.userChoice.then((r) => {
+      installEvent = null;
+      toast(r && r.outcome === "accepted" ? "正在安装…" : "已取消，随时可以在设置里再点");
+    });
+    return;
+  }
+  if (isStandalone()) { toast("已经装好了，你现在就是从桌面图标打开的"); return; }
+  // iOS Safari 或已经错过安装时机：给手动步骤
+  openSheet("装到手机上",
+    '<div class="note">这个 App 是「网页 App」，装到桌面后：<b>有独立图标、打开没有浏览器地址栏、断网也能用</b>。</div>' +
+    '<div style="height:12px"></div>' +
+    '<div class="note"><b>安卓（Chrome / Edge）</b><br>点右上角 <b>⋮</b> → 选「<b>安装应用</b>」或「<b>添加到主屏幕</b>」→ 确认</div>' +
+    '<div style="height:10px"></div>' +
+    '<div class="note"><b>iPhone（Safari）</b><br>点底下中间的 <b>分享</b> 按钮 → 往下找「<b>添加到主屏幕</b>」→ 添加<br>' +
+    '<span style="color:#8a5a00">注意：iPhone 必须用 Safari，微信里打开的不行</span></div>' +
+    '<div style="height:10px"></div>' +
+    '<div class="note">装好之后，从桌面图标打开就是全屏的，和普通 App 一样。</div>');
 }
 
 /* 第一次打开时讲清楚：这是你自己的本子，别人看不到 */
@@ -1961,7 +1984,6 @@ function showPrivacy() {
 
 function init() {
   loadState();
-  injectManifest();
   bind();
   $("#tipText").textContent = nextTip(false);
   liveHint();
